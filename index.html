@@ -62,7 +62,7 @@
         .slot-result { margin-top: 20px; font-size: 18px; font-weight: bold; color: #ed5d19; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #1a1a1a; border-radius: 28px; padding: 28px; max-width: 360px; width: 90%; text-align: center; border: 1px solid #ed5d19; }
-        .modal-content h3 { color: #f0eded; margin-bottom: 12px; }
+        .modal-content h3 { color: #ed5d19; margin-bottom: 12px; }
         .modal-input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #2a2a2a; border-radius: 24px; background: #111; color: #fff; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 10px; }
         .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 24px; cursor: pointer; font-weight: 600; }
@@ -93,7 +93,7 @@
         <input type="password" id="loginPassword" placeholder="••••••••">
     </div>
     <button class="btn" id="loginBtn">войти в AtomGlide</button>
-    <div class="footer"><span>Atom Cases</span><span>•AtomGlide</span></div>
+    <div class="footer"><span>API: atomglidedev.ru</span><span>⭐ ATM</span></div>
 </div>
 
 <div id="mainInterface" class="main-container hidden">
@@ -132,13 +132,14 @@
 
 <div id="slotMachine" class="slot-machine"><div class="slot-reels"><h3>🎰 открытие кейса 🎰</h3><div class="slot-container"><div class="slot-reel-view"><div class="slot-items" id="slotItems"></div></div></div><div class="slot-result" id="slotResult"></div><button class="close-modal" id="closeSlotBtn">закрыть</button></div></div>
 <div id="modal" class="modal"><div class="modal-content"><h3 id="modalTitle"></h3><p id="modalMessage"></p><button class="close-modal" id="closeModalBtn">ок</button></div></div>
-<div id="withdrawAtmModal" class="modal"><div class="modal-content"><h3>💸 Вывод ATM</h3><p>Введите сумму для вывода на свой аккаунт <strong id="currentUsernameDisplay"></strong></p><input type="number" id="withdrawAmount" class="modal-input" placeholder="Сумма в ATM" min="1"><div class="modal-buttons"><button class="modal-btn confirm" id="confirmWithdrawBtn">Вывести</button><button class="modal-btn cancel" id="cancelWithdrawBtn">Отмена</button></div></div></div>
+<div id="withdrawAtmModal" class="modal"><div class="modal-content"><h3>💸 Вывод ATM</h3><p>Введите сумму для вывода на свой аккаунт <strong id="currentUsernameDisplay"></strong></p><p style="font-size:12px; color:#ed5d19; margin-top:5px;">⚠️ Минимальная сумма вывода: 15 ATM</p><input type="number" id="withdrawAmount" class="modal-input" placeholder="Сумма в ATM" min="15"><div class="modal-buttons"><button class="modal-btn confirm" id="confirmWithdrawBtn">Вывести</button><button class="modal-btn cancel" id="cancelWithdrawBtn">Отмена</button></div></div></div>
 
 <script>
 (function(){
     // ==================== КОНФИГУРАЦИЯ ====================
     const API_BASE = 'https://atomglidedev.ru';
     const DEPOSIT_RECIPIENT = '@atomcases';
+    const MIN_WITHDRAW_AMOUNT = 15; // Минимальная сумма вывода
     
     const SUPABASE_URL = 'https://pmybrbmkanzbsmghhein.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_JYy-UIU1s8gH1EfSv2Bqew_oM5MIKuP';
@@ -297,7 +298,6 @@
         });
     }
     
-    // ==================== ЗАПИСЬ ИСТОРИИ ВЫВОДОВ ====================
     async function recordWithdrawal(withdrawType, amount, itemName, recipient){
         await supabase.from('withdrawals').insert({
             user_id:supabaseUserId,
@@ -374,13 +374,31 @@
     // ==================== ВЫВОД ATM ====================
     async function withdrawATM(){
         let amount=parseInt(document.getElementById('withdrawAmount').value);
-        if(!amount||amount<=0){alert('Введите сумму');return;}
-        if(amount>balance){alert(`Недостаточно ATM. Доступно: ${balance}`);return;}
-        if(!bankAccount){alert('Банковский аккаунт не настроен');return;}
+        
+        // Проверка минимальной суммы вывода
+        if(!amount || amount <= 0){
+            alert('Введите сумму');
+            return;
+        }
+        if(amount < MIN_WITHDRAW_AMOUNT){
+            alert(`❌ Минимальная сумма вывода: ${MIN_WITHDRAW_AMOUNT} ATM`);
+            return;
+        }
+        if(amount > balance){
+            alert(`❌ Недостаточно ATM. Доступно: ${balance} ATM`);
+            return;
+        }
+        if(!bankAccount){
+            alert('❌ Банковский аккаунт не настроен');
+            return;
+        }
         
         try{
             let bankData=await getBankTokenAndId();
-            if(!bankData){alert('Не удалось авторизовать банковский аккаунт');return;}
+            if(!bankData){
+                alert('❌ Не удалось авторизовать банковский аккаунт');
+                return;
+            }
             
             let comment=`Вывод средств от пользователя ${currentUser.username} на сумму ${amount} ATM`;
             await apiTransfer(bankData.token, currentUser.username, amount, comment);
@@ -395,7 +413,9 @@
             alert(`✅ Успешно выведено ${amount} ATM на ваш аккаунт ${currentUser.username}`);
             document.getElementById('withdrawAmount').value='';
             document.getElementById('withdrawAtmModal').style.display='none';
-        }catch(e){ alert('Ошибка вывода: '+e.message); }
+        }catch(e){ 
+            alert('Ошибка вывода: '+e.message); 
+        }
     }
     
     // ==================== ПОПОЛНЕНИЕ ====================
