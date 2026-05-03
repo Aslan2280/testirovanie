@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AtomGlide Gifts Battle — кейсы с подарками</title>
+    <style>
+        /* ==================== CSS ИЗ ФАЙЛА Gifts Battle ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wallet, .main-container {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 560px;
+            padding: 24px 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo {
+            background: #ed5d19;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+
+        .badge {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            color: #ed5d19;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #666;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin: 24px 0 12px 0;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            color: #aaa;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .field input, .admin-input, .modal-input, select {
+            width: 100%;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 24px;
+            padding: 14px 18px;
+            font-size: 16px;
+            color: #fff;
+            outline: none;
+            transition: border 0.15s;
+        }
+
+        .field input:focus, .admin-input:focus, select:focus {
+            border-color: #ed5d19;
+        }
+
+        .field input::placeholder {
+            color: #444;
+            font-size: 15px;
+        }
+
+        .username-field {
+            position: relative;
+        }
+
+        .username-field input {
+            padding-left: 32px;
+        }
+
+        .username-field::before {
+            content: '@';
+            position: absolute;
+            left: 18px;
+            top: 42px;
+            color: #888;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .btn {
+            background: #ed5d19;
+            border: none;
+            border-radius: 28px;
+            padding: 16px 20px;
+            font-size: 17px;
+            font-weight: 600;
+            color: #000;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-top: 8px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            background: #ff6f2a;
+            transform: scale(0.99);
+        }
+
+        .btn-secondary {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .btn-secondary:active {
+            background: #2a2a2a;
+        }
+
+        .btn-danger {
+            background: #1a0a0a;
+            color: #ff6b6b;
+        }
+
+        .btn-danger:active {
+            background: #2a0a0a;
+        }
+
+        .btn-atom {
+            background: #2a6f8f;
+            color: #fff;
+        }
+
+        .btn-atom:active {
+            background: #3a8faf;
+        }
+
+        .profile {
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 24px;
+            padding: 20px;
+            margin: 16px 0 20px;
+        }
+
+        .profile-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            background: #ed5d19;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .info h2 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .info .handle {
+            color: #ed5d19;
+            font-size: 14px;
+        }
+
+        .balance-card {
+            background: #000;
+            border: 1px solid #2a2a2a;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .balance-label {
+            color: #888;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-amount {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .balance-amount small {
+            color: #ed5d19;
+            font-size: 14px;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin: 20px 0;
+        }
+
+        .tab {
+            flex: 1;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 30px;
+            padding: 12px 6px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tab.active {
+            background: #ed5d19;
+            border-color: #ed5d19;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .case-card {
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .case-card:hover {
+            transform: translateY(-3px);
+            border-color: #ed5d19;
+        }
+
+        .case-card h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .case-cost {
+            color: #888;
+            font-size: 13px;
+            margin: 12px 0;
+        }
+
+        .open-btn {
+            background: #ed5d19;
+            border: none;
+            border-radius: 28px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #000;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .open-btn:active {
+            transform: scale(0.98);
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .item-card {
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 18px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+            word-break: break-word;
+        }
+
+        .item-rarity {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 8px 0;
+            font-weight: 500;
+        }
+
+        .rarity-common { background: #555; color: #fff; }
+        .rarity-rare { background: #2196F3; color: #fff; }
+        .rarity-epic { background: #9C27B0; color: #fff; }
+        .rarity-legendary { background: #FF9800; color: #fff; }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .item-actions button {
+            flex: 1;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 20px;
+            color: #e0e0e0;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .item-actions button:active {
+            transform: scale(0.96);
+        }
+
+        .slot-machine {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.96);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .slot-reels {
+            background: #1a1a1a;
+            border-radius: 28px;
+            padding: 28px;
+            border: 2px solid #ed5d19;
+            max-width: 90%;
+            width: 420px;
+            text-align: center;
+        }
+
+        .slot-reels h3 {
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .slot-container {
+            background: #0a0a0a;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+            height: 150px;
+            position: relative;
+        }
+
+        .slot-reel-view {
+            height: 110px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slot-items {
+            position: relative;
+            width: 100%;
+        }
+
+        .slot-item {
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .slot-result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ed5d19;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 28px;
+            padding: 28px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid #ed5d19;
+        }
+
+        .modal-content h3 {
+            color: #ed5d19;
+            margin-bottom: 12px;
+        }
+
+        .modal-content p {
+            color: #ccc;
+            margin: 16px 0;
+        }
+
+        .close-modal {
+            background: #2a2a2a;
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            padding: 12px 24px;
+            cursor: pointer;
+            margin-top: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .close-modal:active {
+            transform: scale(0.96);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #1a1a1a;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .footer a {
+            color: #ed5d19;
+            text-decoration: none;
+            border-bottom: 1px dotted #ed5d19;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #122212;
+            border: 1px solid #2a5a2a;
+            color: #9eff9e;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #221212;
+            border: 1px solid #5a2a2a;
+            color: #ff9e9e;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .wallet, .main-container {
+                padding: 20px 16px;
+            }
+            
+            .balance-amount {
+                font-size: 24px;
+            }
+            
+            .profile-row {
+                gap: 12px;
+            }
+            
+            .avatar {
+                width: 52px;
+                height: 52px;
+                font-size: 24px;
+            }
+            
+            .info h2 {
+                font-size: 18px;
+            }
+            
+            .cases-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .inventory-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .slot-reels {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            .slot-item {
+                font-size: 40px;
+                height: 90px;
+            }
+            
+            .slot-container {
+                height: 130px;
+            }
+            
+            .slot-reel-view {
+                height: 90px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ==================== ФОРМА ВХОДА ==================== -->
+<div id="loginForm" class="wallet">
+    <div class="header">
+        <div class="logo">⚔️</div>
+        <div class="title">AtomGlide Gifts</div>
+    </div>
+    <div class="badge">кейсы с подарками AtomGlide</div>
+    
+    <div class="section-title">вход через AtomGlide</div>
+    <div class="field username-field">
+        <label>никнейм</label>
+        <input type="text" id="loginUsername" placeholder="username">
+    </div>
+    <div class="field">
+        <label>пароль</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <button class="btn" id="loginBtn">войти в AtomGlide</button>
+    
+    <div class="footer">
+        <span>API: atomglidedev.ru</span>
+        <span>⭐ ATM</span>
+    </div>
+</div>
+
+<!-- ==================== ГЛАВНЫЙ ИНТЕРФЕЙС ==================== -->
+<div id="mainInterface" class="main-container hidden">
+    <div class="header">
+        <div class="logo">🎁</div>
+        <div class="title">Gifts Battle</div>
+    </div>
+
+    <div class="profile">
+        <div class="profile-row">
+            <div class="avatar" id="avatar">👤</div>
+            <div class="info">
+                <h2 id="fullName">Игрок</h2>
+                <div class="handle" id="userHandle">@player</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="balance-card">
+        <div class="balance-row">
+            <span class="balance-label">💎 Баланс в кейсах</span>
+            <span class="balance-amount" id="localBalance">0 <small>токенов</small></span>
+        </div>
+        <div class="balance-row">
+            <span class="balance-label">⭐ Баланс AtomGlide</span>
+            <span class="balance-amount" id="atmBalance">0 <small>ATM</small></span>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="cases">🎁 кейсы</div>
+        <div class="tab" data-tab="inventory">📦 инвентарь</div>
+        <div class="tab" data-tab="deposit">💰 пополнить</div>
+    </div>
+
+    <!-- Кейсы -->
+    <div id="casesTab" class="tab-content active">
+        <div class="section-title">доступные кейсы</div>
+        <div id="casesGrid" class="cases-grid"><div class="loading">загрузка...</div></div>
+    </div>
+
+    <!-- Инвентарь -->
+    <div id="inventoryTab" class="tab-content">
+        <div class="section-title">ваши подарки из AtomGlide</div>
+        <div id="inventoryGrid" class="inventory-grid"><div class="loading">загрузка...</div></div>
+    </div>
+
+    <!-- Пополнение -->
+    <div id="depositTab" class="tab-content">
+        <div class="section-title">пополнить баланс кейсов</div>
+        
+        <div class="balance-card" style="margin-bottom: 16px;">
+            <div class="balance-row">
+                <span class="balance-label">💰 Ваш баланс в кейсах</span>
+                <span class="balance-amount" id="localBalance2">0 <small>токенов</small></span>
+            </div>
+            <div class="balance-row">
+                <span class="balance-label">⭐ Ваш баланс в AtomGlide</span>
+                <span class="balance-amount" id="atmBalance2">0 <small>ATM</small></span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>сумма пополнения (в ATM)</label>
+            <input type="number" id="depositAmount" placeholder="100" min="1">
+        </div>
+        <div class="field">
+            <label>комментарий (необязательно)</label>
+            <input type="text" id="depositMemo" placeholder="пополнение баланса кейсов">
+        </div>
+        
+        <button class="btn btn-atom" id="depositBtn">💸 перевести ATM → токены</button>
+        <div id="depositMessage"></div>
+        
+        <div class="footer" style="margin-top: 16px; font-size: 12px;">
+            ⚡ Перевод будет отправлен на @atomglide_gifts_bot
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-secondary" id="refreshBtn">🔄 обновить</button>
+        <button class="btn btn-danger" id="logoutBtn">выйти</button>
+    </div>
+    <div class="footer">
+        <span>AtomGlide Gifts Battle</span>
+        <a id="logoutLink" style="cursor:pointer;">выйти</a>
+    </div>
+</div>
+
+<!-- Слот-машина -->
+<div id="slotMachine" class="slot-machine">
+    <div class="slot-reels">
+        <h3>🎰 открытие кейса 🎰</h3>
+        <div class="slot-container">
+            <div class="slot-reel-view">
+                <div class="slot-items" id="slotItems"></div>
+            </div>
+        </div>
+        <div class="slot-result" id="slotResult"></div>
+        <button class="close-modal" id="closeSlotBtn">закрыть</button>
+    </div>
+</div>
+
+<!-- Модалка -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle"></h3>
+        <p id="modalMessage" style="margin: 16px 0;"></p>
+        <button class="close-modal" id="closeModalBtn">ок</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ==================== КОНФИГУРАЦИЯ ====================
+        const API_BASE = 'https://atomglidedev.ru';
+        const RECIPIENT_USERNAME = '@atomglide_gifts_bot';
+        
+        // Supabase (анонимный доступ, RLS отключён)
+        const SUPABASE_URL = 'https://pmybrbmkanzbsmghhein.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_JYy-UIU1s8gH1EfSv2Bqew_oM5MIKuP';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let currentToken = null;
+        let currentUserId = null;
+        let currentSlotTimeout = null;
+        
+        // Кейсы (статичные, для отображения)
+        const casesData = [
+            { id: 1, name: 'обычный кейс', cost_tokens: 10, background: '📦' },
+            { id: 2, name: 'редкий кейс', cost_tokens: 50, background: '✨' },
+            { id: 3, name: 'эпический кейс', cost_tokens: 100, background: '🔥' },
+            { id: 4, name: 'легендарный кейс', cost_tokens: 250, background: '👑' },
+            { id: 5, name: 'бесплатный кейс', cost_tokens: 0, background: '🎁', daily: true }
+        ];
+        
+        const rewardsData = {
+            1: [
+                { type: 'gift', name: '🎀 Бантик', rarity: 'common', chance: 35 },
+                { type: 'gift', name: '🍬 Конфетка', rarity: 'common', chance: 30 },
+                { type: 'gift', name: '🎈 Воздушный шарик', rarity: 'rare', chance: 20 },
+                { type: 'gift', name: '📱 Стикерпак', rarity: 'epic', chance: 10 },
+                { type: 'tokens', value: 5, name: '5 токенов', chance: 5 }
+            ],
+            2: [
+                { type: 'gift', name: '🎨 Аватарка', rarity: 'rare', chance: 35 },
+                { type: 'gift', name: '🖼️ Рамка', rarity: 'rare', chance: 30 },
+                { type: 'gift', name: '✨ Анимация', rarity: 'epic', chance: 20 },
+                { type: 'gift', name: '💎 Уникальный подарок', rarity: 'legendary', chance: 10 },
+                { type: 'tokens', value: 25, name: '25 токенов', chance: 5 }
+            ],
+            3: [
+                { type: 'gift', name: '🎭 Маска', rarity: 'epic', chance: 40 },
+                { type: 'gift', name: '⚡ Эффект', rarity: 'epic', chance: 30 },
+                { type: 'gift', name: '👑 Корона', rarity: 'legendary', chance: 20 },
+                { type: 'tokens', value: 50, name: '50 токенов', chance: 10 }
+            ],
+            4: [
+                { type: 'gift', name: '🏆 Трофей', rarity: 'legendary', chance: 50 },
+                { type: 'gift', name: '⭐ Эксклюзив', rarity: 'legendary', chance: 30 },
+                { type: 'tokens', value: 100, name: '100 токенов', chance: 20 }
+            ],
+            5: [
+                { type: 'gift', name: '🍪 Печенька', rarity: 'common', chance: 50 },
+                { type: 'gift', name: '🥤 Лимонад', rarity: 'common', chance: 40 },
+                { type: 'tokens', value: 3, name: '3 токена', chance: 10 }
+            ]
+        };
+        
+        // ==================== API ATOMGLIDE ====================
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(base64));
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        async function apiLogin(username, password) {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (!response.ok) throw new Error('Login failed');
+            const data = await response.json();
+            const token = data.token || data.access_token;
+            if (!token) throw new Error('No token');
+            return token;
+        }
+        
+        async function apiGetUser(userId, token) {
+            const response = await fetch(`${API_BASE}/users/${userId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Failed to get user');
+            return await response.json();
+        }
+        
+        async function apiGetBalance(userId, token) {
+            const userData = await apiGetUser(userId, token);
+            return parseFloat(userData.balance) || 0;
+        }
+        
+        // ==================== SUPABASE ФУНКЦИИ (RLS отключён) ====================
+        async function getOrCreateUserInSupabase(atomglideId, username, fullName) {
+            // Ищем пользователя
+            let { data: existing, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('atomglide_id', atomglideId)
+                .maybeSingle();
+            
+            if (existing && !error) {
+                return existing;
+            }
+            
+            // Создаём нового
+            const { data: newUser, error: insertError } = await supabase
+                .from('users')
+                .insert({
+                    atomglide_id: atomglideId,
+                    username: username,
+                    full_name: fullName,
+                    balance_tokens: 0,
+                    last_free_case_date: null
+                })
+                .select()
+                .single();
+            
+            if (insertError) {
+                console.error('Error creating user:', insertError);
+                throw insertError;
+            }
+            
+            return newUser;
+        }
+        
+        async function loadUserDataFromSupabase(userId) {
+            const { data: user, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single();
+            
+            if (error) throw error;
+            return user;
+        }
+        
+        async function updateUserBalance(userId, newBalance) {
+            const { error } = await supabase
+                .from('users')
+                .update({ balance_tokens: newBalance })
+                .eq('id', userId);
+            
+            if (error) throw error;
+        }
+        
+        async function updateLastFreeCase(userId, date) {
+            const { error } = await supabase
+                .from('users')
+                .update({ last_free_case_date: date })
+                .eq('id', userId);
+            
+            if (error) throw error;
+        }
+        
+        async function addGiftToInventory(userId, giftName, giftRarity) {
+            const { error } = await supabase
+                .from('inventory')
+                .insert({
+                    user_id: userId,
+                    gift_name: giftName,
+                    gift_rarity: giftRarity,
+                    received_at: new Date().toISOString()
+                });
+            
+            if (error) throw error;
+        }
+        
+        async function loadInventoryFromSupabase(userId) {
+            const { data: items, error } = await supabase
+                .from('inventory')
+                .select('*')
+                .eq('user_id', userId)
+                .order('received_at', { ascending: false });
+            
+            if (error) throw error;
+            return items || [];
+        }
+        
+        async function recordCaseOpening(userId, caseId, reward, spentTokens) {
+            const { error } = await supabase
+                .from('case_openings')
+                .insert({
+                    user_id: userId,
+                    case_id: caseId,
+                    reward_type: reward.type,
+                    reward_name: reward.name || null,
+                    reward_value: reward.value || null,
+                    reward_rarity: reward.rarity || null,
+                    spent_tokens: spentTokens,
+                    created_at: new Date().toISOString()
+                });
+            
+            if (error) console.error('Error recording case opening:', error);
+        }
+        
+        // ==================== АВТОРИЗАЦИЯ ====================
+        async function handleLogin() {
+            let username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showModal('Ошибка', 'Заполните поля');
+                return;
+            }
+            if (!username.startsWith('@')) username = '@' + username;
+            
+            try {
+                const token = await apiLogin(username, password);
+                currentToken = token;
+                const payload = parseJwt(token);
+                const atomglideId = payload._id;
+                const userData = await apiGetUser(atomglideId, token);
+                
+                currentUser = {
+                    _id: atomglideId,
+                    username: username,
+                    fullName: userData.fullName || username.replace('@', ''),
+                    atmBalance: parseFloat(userData.balance) || 0
+                };
+                
+                // Создаём или получаем пользователя в Supabase
+                const supabaseUser = await getOrCreateUserInSupabase(
+                    atomglideId,
+                    username,
+                    currentUser.fullName
+                );
+                currentUserId = supabaseUser.id;
+                
+                document.getElementById('fullName').textContent = supabaseUser.full_name;
+                document.getElementById('userHandle').textContent = username;
+                document.getElementById('avatar').textContent = (supabaseUser.full_name || 'U').charAt(0).toUpperCase();
+                
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('mainInterface').classList.remove('hidden');
+                
+                await refreshAll();
+            } catch (err) {
+                console.error(err);
+                showModal('Ошибка входа', 'Неверный логин или пароль');
+            }
+        }
+        
+        function logout() {
+            currentUser = null;
+            currentToken = null;
+            currentUserId = null;
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('mainInterface').classList.add('hidden');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+        
+        // ==================== ПОПОЛНЕНИЕ ====================
+        async function depositFromATM() {
+            const amount = parseInt(document.getElementById('depositAmount').value);
+            
+            if (!amount || amount <= 0) {
+                showModal('Ошибка', 'Введите сумму пополнения');
+                return;
+            }
+            
+            const atmBalance = await apiGetBalance(currentUser._id, currentToken);
+            if (atmBalance < amount) {
+                showModal('Ошибка', `Недостаточно ATM. Доступно: ${atmBalance} ATM`);
+                return;
+            }
+            
+            showModal('Запрос отправлен', `Перевод ${amount} ATM на ${RECIPIENT_USERNAME} отправлен.\nПосле подтверждения баланс пополнится.`);
+            
+            const userDb = await loadUserDataFromSupabase(currentUserId);
+            const newBalance = userDb.balance_tokens + amount;
+            await updateUserBalance(currentUserId, newBalance);
+            
+            await refreshAll();
+            document.getElementById('depositAmount').value = '';
+            document.getElementById('depositMessage').innerHTML = '<div class="success">✅ Баланс пополнен!</div>';
+            setTimeout(() => {
+                document.getElementById('depositMessage').innerHTML = '';
+            }, 3000);
+        }
+        
+        // ==================== КЕЙСЫ ====================
+        async function loadCases() {
+            const grid = document.getElementById('casesGrid');
+            grid.innerHTML = casesData.map(c => `
+                <div class="case-card" data-id="${c.id}" data-cost="${c.cost_tokens}">
+                    <h3>${c.background} ${c.name}</h3>
+                    <div class="case-cost">${c.cost_tokens > 0 ? `💰 ${c.cost_tokens} токенов` : '🎁 бесплатно (раз в день)'}</div>
+                    <button class="open-btn">открыть</button>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.case-card').forEach(card => {
+                const btn = card.querySelector('.open-btn');
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(card.dataset.id);
+                    const cost = parseInt(card.dataset.cost);
+                    await openCase(id, cost);
+                });
+            });
+        }
+        
+        async function openCase(caseId, costTokens) {
+            const isFree = (costTokens === 0);
+            
+            const userDb = await loadUserDataFromSupabase(currentUserId);
+            let currentBalance = userDb.balance_tokens;
+            let lastFreeDate = userDb.last_free_case_date;
+            
+            if (isFree) {
+                const today = new Date().toDateString();
+                if (lastFreeDate === today) {
+                    showModal('Ошибка', 'Бесплатный кейс доступен раз в день');
+                    return;
+                }
+            } else {
+                if (currentBalance < costTokens) {
+                    showModal('Ошибка', `Не хватает токенов. Нужно: ${costTokens}`);
+                    return;
+                }
+            }
+            
+            const rewards = rewardsData[caseId] || rewardsData[1];
+            const totalChance = rewards.reduce((s, r) => s + r.chance, 0);
+            let rand = Math.random() * totalChance;
+            let selected = rewards[0];
+            for (const r of rewards) {
+                if (rand <= r.chance) { selected = r; break; }
+                rand -= r.chance;
+            }
+            
+            await showSlotAnimation(selected);
+            
+            let newBalance = currentBalance;
+            let resultMsg = '';
+            
+            if (!isFree) {
+                newBalance = currentBalance - costTokens;
+                await updateUserBalance(currentUserId, newBalance);
+            } else {
+                await updateLastFreeCase(currentUserId, new Date().toDateString());
+            }
+            
+            if (selected.type === 'tokens') {
+                newBalance = newBalance + selected.value;
+                await updateUserBalance(currentUserId, newBalance);
+                resultMsg = `💰 +${selected.value} токенов!`;
+            } else if (selected.type === 'gift') {
+                await addGiftToInventory(currentUserId, selected.name, selected.rarity);
+                resultMsg = `🎁 ${selected.name} (${selected.rarity}) добавлен в инвентарь!`;
+            }
+            
+            await recordCaseOpening(currentUserId, caseId, selected, isFree ? 0 : costTokens);
+            await refreshAll();
+            
+            setTimeout(() => showModal('🎉 Поздравляем!', resultMsg), 2600);
+        }
+        
+        // ==================== ИНВЕНТАРЬ ====================
+        async function loadInventory() {
+            try {
+                const items = await loadInventoryFromSupabase(currentUserId);
+                const grid = document.getElementById('inventoryGrid');
+                
+                if (items.length === 0) {
+                    grid.innerHTML = '<div class="loading">У вас пока нет подарков. Откройте кейс!</div>';
+                    return;
+                }
+                
+                grid.innerHTML = items.map(item => `
+                    <div class="item-card">
+                        <div class="item-name">${escapeHtml(item.gift_name)}</div>
+                        <div class="item-rarity rarity-${item.gift_rarity}">${item.gift_rarity}</div>
+                        <div class="item-actions">
+                            <button class="transfer-to-atom" data-name="${escapeHtml(item.gift_name)}">📤 отправить в AtomGlide</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.querySelectorAll('.transfer-to-atom').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const giftName = btn.dataset.name;
+                        showModal('Отправка подарка', `Подарок "${giftName}" будет отправлен в AtomGlide. Функция в разработке.`);
+                    });
+                });
+            } catch (err) {
+                console.error('Load inventory error:', err);
+            }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // ==================== АНИМАЦИЯ СЛОТА ====================
+        async function showSlotAnimation(reward) {
+            const slot = document.getElementById('slotMachine');
+            const itemsContainer = document.getElementById('slotItems');
+            const resultDiv = document.getElementById('slotResult');
+            
+            const icons = ['🎁', '💰', '🎰', '✨', '🎲', '🏆'];
+            let finalIcon = '🎁';
+            if (reward.type === 'tokens') finalIcon = '💰';
+            else if (reward.type === 'gift') finalIcon = '🎁';
+            
+            let html = '';
+            for (let i = 0; i < 30; i++) {
+                html += `<div class="slot-item">${icons[Math.floor(Math.random() * icons.length)]}</div>`;
+            }
+            html += `<div class="slot-item">${finalIcon}</div>`;
+            itemsContainer.innerHTML = html;
+            
+            slot.style.display = 'flex';
+            resultDiv.textContent = 'крутим...';
+            
+            itemsContainer.style.transition = 'none';
+            itemsContainer.style.transform = 'translateY(0)';
+            itemsContainer.offsetHeight;
+            itemsContainer.style.transition = 'transform 2.5s cubic-bezier(0.25, 0.1, 0.15, 1)';
+            itemsContainer.style.transform = `translateY(${-(30 * 111)}px)`;
+            
+            if (currentSlotTimeout) clearTimeout(currentSlotTimeout);
+            currentSlotTimeout = setTimeout(() => {
+                let text = '';
+                if (reward.type === 'tokens') text = `🎉 выпало: 💰 +${reward.value} токенов! 🎉`;
+                else if (reward.type === 'gift') text = `🎉 выпало: 🎁 ${reward.name}! 🎉`;
+                else text = `🎉 выпало: ${reward.name}! 🎉`;
+                resultDiv.textContent = text;
+            }, 2500);
+        }
+        
+        function closeSlot() {
+            if (currentSlotTimeout) clearTimeout(currentSlotTimeout);
+            document.getElementById('slotMachine').style.display = 'none';
+        }
+        
+        // ==================== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ====================
+        async function refreshAll() {
+            if (!currentUser || !currentUserId) return;
+            
+            try {
+                const atmBalance = await apiGetBalance(currentUser._id, currentToken);
+                currentUser.atmBalance = atmBalance;
+                
+                const userDb = await loadUserDataFromSupabase(currentUserId);
+                
+                document.getElementById('localBalance').innerHTML = `${userDb.balance_tokens} <small>токенов</small>`;
+                document.getElementById('localBalance2').innerHTML = `${userDb.balance_tokens} <small>токенов</small>`;
+                document.getElementById('atmBalance').innerHTML = `${currentUser.atmBalance || 0} <small>ATM</small>`;
+                document.getElementById('atmBalance2').innerHTML = `${currentUser.atmBalance || 0} <small>ATM</small>`;
+                
+                await loadInventory();
+            } catch (err) {
+                console.error('Refresh error:', err);
+            }
+        }
+        
+        // ==================== UI ====================
+        function showModal(title, msg) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = msg;
+            document.getElementById('modal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`${tabName}Tab`).classList.add('active');
+                    if (tabName === 'inventory') loadInventory();
+                    if (tabName === 'cases') loadCases();
+                });
+            });
+        }
+        
+        // ==================== СОБЫТИЯ ====================
+        document.getElementById('loginBtn').addEventListener('click', handleLogin);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('refreshBtn').addEventListener('click', refreshAll);
+        document.getElementById('depositBtn').addEventListener('click', depositFromATM);
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('closeSlotBtn').addEventListener('click', closeSlot);
+        document.getElementById('logoutLink').addEventListener('click', logout);
+        
+        initTabs();
+        loadCases();
+    })();
+</script>
+</body>
+</html>
