@@ -126,7 +126,7 @@
         <div id="withdrawalsList" class="inventory-grid"><div class="loading">загрузка...</div></div>
     </div>
 
-    <div class="actions"><button class="btn btn-secondary" id="refreshBtn">🔄 обновить</button><button class="btn btn-danger" id="logoutBtn">выйти</button></div>
+    <div class="actions"><button class="btn btn-danger" id="logoutBtn">выйти</button></div>
     <div class="footer">Atom Cases · открывай кейсы с NFT подарками</div>
 </div>
 
@@ -414,7 +414,7 @@
     }
     
     // ==================== ВЫВОД NFT ====================
-    async function withdrawNFT(nftName, nftValue){
+    async function withdrawNFT(nftName){
         if(!bankAccount){ alert('❌ Банковский аккаунт не настроен'); return false; }
         
         let itemIndex=inventory.findIndex(i=>i.name===nftName);
@@ -459,6 +459,8 @@
     
     // ==================== КЕЙСЫ (ИЗ БД) ====================
     async function loadCases() {
+        console.log('Loading cases from Supabase...');
+        
         let { data: dbCases, error } = await supabase
             .from('cases')
             .select('*')
@@ -467,12 +469,14 @@
         
         if (error) {
             console.error('Error loading cases:', error);
-            document.getElementById('casesGrid').innerHTML = '<div class="loading">Ошибка загрузки кейсов</div>';
+            document.getElementById('casesGrid').innerHTML = '<div class="loading">Ошибка загрузки кейсов: ' + error.message + '</div>';
             return;
         }
         
+        console.log('Loaded cases:', dbCases);
+        
         if (!dbCases || dbCases.length === 0) {
-            document.getElementById('casesGrid').innerHTML = '<div class="loading">Нет доступных кейсов</div>';
+            document.getElementById('casesGrid').innerHTML = '<div class="loading">Нет доступных кейсов. Добавьте кейсы в админ-панели.</div>';
             return;
         }
         
@@ -608,7 +612,7 @@
     async function loadInventory(){
         let grid=document.getElementById('inventoryGrid');
         if(!inventory.length){grid.innerHTML='<div class="loading">У вас пока нет NFT подарков</div>';return;}
-        grid.innerHTML=inventory.map(i=>`<div class="item-card"><div class="item-name">${escapeHtml(i.name)}</div><div class="item-value">💰 Цена: ${i.value} ATM</div><div class="item-actions"><button class="sell-nft-btn" data-id="${i.id}" data-value="${i.value}" data-name="${escapeHtml(i.name)}">💰 Продать за ${i.value} ATM</button><button class="withdraw-nft-btn" data-name="${escapeHtml(i.name)}" data-value="${i.value}">🎁 Вывести NFT</button></div></div>`).join('');
+        grid.innerHTML=inventory.map(i=>`<div class="item-card"><div class="item-name">${escapeHtml(i.name)}</div><div class="item-value">💰 Цена: ${i.value} ATM</div><div class="item-actions"><button class="sell-nft-btn" data-id="${i.id}" data-value="${i.value}" data-name="${escapeHtml(i.name)}">💰 Продать за ${i.value} ATM</button><button class="withdraw-nft-btn" data-name="${escapeHtml(i.name)}">🎁 Вывести NFT</button></div></div>`).join('');
         
         document.querySelectorAll('.sell-nft-btn').forEach(btn=>{btn.onclick=async()=>{
             let itemId=btn.dataset.id, itemValue=parseInt(btn.dataset.value), itemName=btn.dataset.name;
@@ -623,21 +627,25 @@
         
         document.querySelectorAll('.withdraw-nft-btn').forEach(btn=>{btn.onclick=async()=>{
             let itemName=btn.dataset.name;
-            let itemValue=parseInt(btn.dataset.value);
-            await withdrawNFT(itemName, itemValue);
+            await withdrawNFT(itemName);
         };});
     }
     
     // ==================== ОБНОВЛЕНИЕ ====================
     async function refresh(){
         if(!currentUser)return;
-        try{let b=await apiGetBalance(currentUser._id,token);currentUser.atmBalance=b;}catch(e){}
+        try{
+            let b=await apiGetBalance(currentUser._id,token);
+            currentUser.atmBalance=b;
+        }catch(e){}
         document.getElementById('atmBalance').innerHTML=`${balance} <small>ATM</small>`;
         document.getElementById('atmBalance2').innerHTML=`${balance} <small>ATM</small>`;
         await loadInventory();
         if(document.querySelector('.tab.active')?.dataset.tab === 'withdrawals'){
             await loadWithdrawals();
         }
+        // Обновляем кейсы при каждом рефреше
+        await loadCases();
     }
     
     function showModal(title, msg) {
@@ -661,6 +669,7 @@
                 document.getElementById(`${n}Tab`).classList.add('active');
                 if(n==='inventory') await loadInventory();
                 if(n==='withdrawals') await loadWithdrawals();
+                if(n==='cases') await loadCases();
             };
         });
     }
@@ -668,7 +677,6 @@
     // ==================== СОБЫТИЯ ====================
     document.getElementById('loginBtn').onclick=login;
     document.getElementById('logoutBtn').onclick=logout;
-    document.getElementById('refreshBtn').onclick=refresh;
     document.getElementById('depositBtn').onclick=deposit;
     document.getElementById('withdrawAtmBtn').onclick=()=>{
         document.getElementById('currentUsernameDisplay').innerText=currentUser.username;
