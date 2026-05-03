@@ -132,7 +132,7 @@
 <script>
 (function(){
     const API_BASE = 'https://atomglidedev.ru';
-    const DEPOSIT_RECIPIENT = '@atomcases';  // Сюда приходят пополнения
+    const DEPOSIT_RECIPIENT = '@atomcases';
     
     const SUPABASE_URL = 'https://pmybrbmkanzbsmghhein.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_JYy-UIU1s8gH1EfSv2Bqew_oM5MIKuP';
@@ -173,7 +173,7 @@
             headers:{'Content-Type':'application/json','Authorization':`Bearer ${fromToken}`},
             body:JSON.stringify({username:toUsername,amount:amount,description:comment})
         });
-        if(!r.ok)throw new Error('Transfer failed');
+        if(!r.ok)throw new Error('Transfer failed: ' + (await r.text()));
         return await r.json();
     }
     
@@ -283,18 +283,31 @@
     }
     
     async function deposit(){
-        let amt=parseInt(document.getElementById('depositAmount').value);
-        if(!amt||amt<=0){alert('Введите сумму');return;}
-        let atm=await apiGetBalance(currentUser._id,token);
-        if(atm<amt){alert(`Недостаточно ATM. Доступно: ${atm}`);return;}
-        let comment=`Пополнение баланса в Atom Cases на сумму ${amt} ATM`;
-        alert(`Перевод ${amt} ATM на ${DEPOSIT_RECIPIENT}\nКомментарий: ${comment}\nПосле подтверждения баланс пополнится.`);
-        balance+=amt;
-        await saveToSupabase();
-        await refresh();
-        document.getElementById('depositAmount').value='';
-        document.getElementById('depositMessage').innerHTML='<div class="success">✅ Баланс пополнен!</div>';
-        setTimeout(()=>document.getElementById('depositMessage').innerHTML='',3000);
+        let amt = parseInt(document.getElementById('depositAmount').value);
+        if(!amt || amt <= 0){ alert('Введите сумму'); return; }
+        
+        let userBalance = await apiGetBalance(currentUser._id, token);
+        if(userBalance < amt){ 
+            alert(`❌ Недостаточно ATM на вашем балансе AtomGlide. Доступно: ${userBalance} ATM`); 
+            return; 
+        }
+        
+        let comment = `Пополнение баланса в Atom Cases на сумму ${amt} ATM`;
+        
+        try {
+            await apiTransfer(token, DEPOSIT_RECIPIENT, amt, comment);
+            
+            balance += amt;
+            await saveToSupabase();
+            await refresh();
+            
+            document.getElementById('depositAmount').value = '';
+            document.getElementById('depositMessage').innerHTML = '<div class="success">✅ Баланс успешно пополнен!</div>';
+            setTimeout(() => document.getElementById('depositMessage').innerHTML = '', 3000);
+            
+        } catch(e) {
+            alert('❌ Ошибка перевода: ' + e.message);
+        }
     }
     
     async function loadCases(){
