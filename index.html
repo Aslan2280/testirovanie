@@ -93,7 +93,7 @@
         <input type="password" id="loginPassword" placeholder="••••••••">
     </div>
     <button class="btn" id="loginBtn">войти в AtomGlide</button>
-    <div class="footer"><span>Atom Cases </span><span>• AtomGlide</span></div>
+    <div class="footer"><span>API: atomglidedev.ru</span><span>⭐ ATM</span></div>
 </div>
 
 <div id="mainInterface" class="main-container hidden">
@@ -136,7 +136,6 @@
 
 <script>
 (function(){
-    // ==================== КОНФИГУРАЦИЯ ====================
     const API_BASE = 'https://atomglidedev.ru';
     const DEPOSIT_RECIPIENT = '@atomcases';
     const MIN_WITHDRAW_AMOUNT = 15;
@@ -149,11 +148,9 @@
     let supabaseUserId = null;
     let bankAccount = null;
     
-    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     function parseJwt(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}
     function escapeHtml(s){if(!s)return '';return s.replace(/[&<>]/g,function(m){return m==='&'?'&amp;':m==='<'?'&lt;':m==='>'?'&gt;':m;});}
     
-    // ==================== API ATOMGLIDE ====================
     async function apiLogin(u,p){
         let r=await fetch(`${API_BASE}/auth/login`,{
             method:'POST',
@@ -216,7 +213,6 @@
         return await r.json();
     }
     
-    // ==================== SUPABASE ФУНКЦИИ ====================
     async function loadBankAccount(){
         let {data,error}=await supabase.from('bank').select('*').limit(1).maybeSingle();
         if(data && !error){ bankAccount=data; }
@@ -319,7 +315,6 @@
         }).join('');
     }
     
-    // ==================== АВТОРИЗАЦИЯ ====================
     async function login(){
         let u=document.getElementById('loginUsername').value.trim();
         let p=document.getElementById('loginPassword').value;
@@ -351,7 +346,6 @@
         document.getElementById('mainInterface').classList.add('hidden');
     }
     
-    // ==================== ВЫВОД ATM ====================
     async function withdrawATM(){
         let amount=parseInt(document.getElementById('withdrawAmount').value);
         
@@ -395,7 +389,6 @@
         }
     }
     
-    // ==================== ПОПОЛНЕНИЕ ====================
     async function deposit(){
         let amt=parseInt(document.getElementById('depositAmount').value);
         if(!amt||amt<=0){alert('Введите сумму');return;}
@@ -413,7 +406,6 @@
         }catch(e){ alert('❌ Ошибка перевода: '+e.message); }
     }
     
-    // ==================== ВЫВОД NFT ====================
     async function withdrawNFT(nftName){
         if(!bankAccount){ alert('❌ Банковский аккаунт не настроен'); return false; }
         
@@ -457,7 +449,6 @@
         }
     }
     
-    // ==================== КЕЙСЫ (ИЗ БД) ====================
     async function loadCases() {
         console.log('Loading cases from Supabase...');
         
@@ -608,7 +599,6 @@
         document.getElementById('slotMachine').style.display = 'none';
     }
     
-    // ==================== ИНВЕНТАРЬ ====================
     async function loadInventory(){
         let grid=document.getElementById('inventoryGrid');
         if(!inventory.length){grid.innerHTML='<div class="loading">У вас пока нет NFT подарков</div>';return;}
@@ -631,7 +621,6 @@
         };});
     }
     
-    // ==================== ОБНОВЛЕНИЕ ====================
     async function refresh(){
         if(!currentUser)return;
         try{
@@ -644,7 +633,6 @@
         if(document.querySelector('.tab.active')?.dataset.tab === 'withdrawals'){
             await loadWithdrawals();
         }
-        // Обновляем кейсы при каждом рефреше
         await loadCases();
     }
     
@@ -658,7 +646,6 @@
         document.getElementById('modal').style.display = 'none';
     }
     
-    // ==================== ТАБЫ ====================
     function initTabs(){
         document.querySelectorAll('.tab').forEach(t=>{
             t.onclick=async()=>{
@@ -674,7 +661,6 @@
         });
     }
     
-    // ==================== СОБЫТИЯ ====================
     document.getElementById('loginBtn').onclick=login;
     document.getElementById('logoutBtn').onclick=logout;
     document.getElementById('depositBtn').onclick=deposit;
