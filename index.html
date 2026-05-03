@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AtomGlide Gifts Battle — кейсы с подарками</title>
+    <title>Atom Cases — кейсы с подарками</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 12px; }
@@ -26,7 +26,6 @@
         .btn-danger { background: #1a0a0a; color: #ff6b6b; }
         .btn-atom { background: #2a6f8f; color: #fff; }
         .btn-withdraw { background: #ff9800; color: #000; }
-        .btn-withdraw-nft { background: #9C27B0; color: #fff; margin-top: 5px; }
         .profile { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 24px; padding: 20px; margin: 16px 0 20px; }
         .profile-row { display: flex; align-items: center; gap: 16px; }
         .avatar { width: 64px; height: 64px; background: #ed5d19; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: #000; }
@@ -82,7 +81,7 @@
 <body>
 
 <div id="loginForm" class="wallet">
-    <div class="header"><div class="logo">⚔️</div><div class="title">AtomGlide Gifts</div></div>
+    <div class="header"><div class="logo">⚔️</div><div class="title">Atom Cases</div></div>
     <div class="badge">кейсы с подарками AtomGlide</div>
     <div class="section-title">вход через AtomGlide</div>
     <div class="field username-field">
@@ -98,17 +97,18 @@
 </div>
 
 <div id="mainInterface" class="main-container hidden">
-    <div class="header"><div class="logo">🎁</div><div class="title">Gifts Battle</div></div>
+    <div class="header"><div class="logo">🎁</div><div class="title">Atom Cases</div></div>
     <div class="profile"><div class="profile-row"><div class="avatar" id="avatar">👤</div><div class="info"><h2 id="fullName">Игрок</h2><div class="handle" id="userHandle">@player</div></div></div></div>
     <div class="balance-card">
         <div class="balance-row"><span class="balance-label">💰 Баланс ATM</span><span class="balance-amount" id="atmBalance">0 <small>ATM</small></span></div>
-        <div class="balance-row"><button class="btn-withdraw" id="withdrawBtn" style="background:#ff9800; color:#000; padding:10px; margin-top:10px;">💸 Вывести ATM</button></div>
+        <div class="balance-row"><button class="btn-withdraw" id="withdrawAtmBtn" style="background:#ff9800; color:#000; padding:10px; margin-top:10px;">💸 Вывести ATM</button></div>
     </div>
 
     <div class="tabs">
         <div class="tab active" data-tab="cases">🎁 кейсы</div>
         <div class="tab" data-tab="inventory">📦 NFT подарки</div>
         <div class="tab" data-tab="deposit">💳 пополнить</div>
+        <div class="tab" data-tab="withdrawals">📜 история выводов</div>
     </div>
 
     <div id="casesTab" class="tab-content active"><div class="section-title">доступные кейсы</div><div id="casesGrid" class="cases-grid"><div class="loading">загрузка...</div></div></div>
@@ -121,15 +121,18 @@
         <div id="depositMessage"></div>
         <div class="footer" style="margin-top:16px">⚡ Перевод на @atomcases</div>
     </div>
+    <div id="withdrawalsTab" class="tab-content">
+        <div class="section-title">история выводов</div>
+        <div id="withdrawalsList" class="inventory-grid"><div class="loading">загрузка...</div></div>
+    </div>
 
     <div class="actions"><button class="btn btn-secondary" id="refreshBtn">🔄 обновить</button><button class="btn btn-danger" id="logoutBtn">выйти</button></div>
-    <div class="footer">AtomGlide Gifts Battle · открывай кейсы с NFT подарками</div>
+    <div class="footer">Atom Cases · открывай кейсы с NFT подарками</div>
 </div>
 
 <div id="slotMachine" class="slot-machine"><div class="slot-reels"><h3>🎰 открытие кейса 🎰</h3><div class="slot-container"><div class="slot-reel-view"><div class="slot-items" id="slotItems"></div></div></div><div class="slot-result" id="slotResult"></div><button class="close-modal" id="closeSlotBtn">закрыть</button></div></div>
 <div id="modal" class="modal"><div class="modal-content"><h3 id="modalTitle"></h3><p id="modalMessage"></p><button class="close-modal" id="closeModalBtn">ок</button></div></div>
-<div id="withdrawModal" class="modal"><div class="modal-content"><h3>💸 Вывод ATM</h3><p>Введите никнейм получателя в AtomGlide</p><input type="text" id="withdrawUsername" class="modal-input" placeholder="@username"><input type="number" id="withdrawAmount" class="modal-input" placeholder="Сумма в ATM" min="1"><div class="modal-buttons"><button class="modal-btn confirm" id="confirmWithdrawBtn">Вывести</button><button class="modal-btn cancel" id="cancelWithdrawBtn">Отмена</button></div></div></div>
-<div id="withdrawNFTModal" class="modal"><div class="modal-content"><h3>🎁 Вывод NFT</h3><p id="withdrawNFTName"></p><input type="text" id="nftRecipientUsername" class="modal-input" placeholder="@username получателя"><div class="modal-buttons"><button class="modal-btn confirm" id="confirmWithdrawNFTBtn">Вывести NFT</button><button class="modal-btn cancel" id="cancelWithdrawNFTBtn">Отмена</button></div></div></div>
+<div id="withdrawAtmModal" class="modal"><div class="modal-content"><h3>💸 Вывод ATM</h3><p>Введите сумму для вывода на свой аккаунт <strong id="currentUsernameDisplay"></strong></p><input type="number" id="withdrawAmount" class="modal-input" placeholder="Сумма в ATM" min="1"><div class="modal-buttons"><button class="modal-btn confirm" id="confirmWithdrawBtn">Вывести</button><button class="modal-btn cancel" id="cancelWithdrawBtn">Отмена</button></div></div></div>
 
 <script>
 (function(){
@@ -144,7 +147,6 @@
     let currentUser = null, token = null, balance = 0, inventory = [], lastFree = null, slotTimeout = null;
     let supabaseUserId = null;
     let bankAccount = null;
-    let currentNFTToWithdraw = null;
     
     // Кейсы
     const cases = [
@@ -168,7 +170,6 @@
     
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     function parseJwt(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}
-    
     function escapeHtml(s){if(!s)return '';return s.replace(/[&<>]/g,function(m){return m==='&'?'&amp;':m==='<'?'&lt;':m==='>'?'&gt;':m;});}
     
     // ==================== API ATOMGLIDE ====================
@@ -204,22 +205,16 @@
         return await r.json();
     }
     
-    // ПРАВИЛЬНЫЙ ЭНДПОИНТ: GET /{user_id}/purchases
     async function apiGetUserNFTs(userId, userToken){
         try{
             let r=await fetch(`${API_BASE}/${userId}/purchases`,{
                 method:'GET',
                 headers:{'Authorization':`Bearer ${userToken}`,'Accept':'application/json'}
             });
-            if(!r.ok){
-                let err=await r.text();
-                throw new Error(`HTTP ${r.status}: ${err}`);
-            }
+            if(!r.ok) throw new Error(`HTTP ${r.status}`);
             let data=await r.json();
-            console.log('NFT API response:',data);
             if(Array.isArray(data)) return data;
             if(data.purchases && Array.isArray(data.purchases)) return data.purchases;
-            if(data.data && Array.isArray(data.data)) return data.data;
             return [];
         }catch(e){
             console.error('Get NFTs error:',e);
@@ -227,7 +222,6 @@
         }
     }
     
-    // ПРАВИЛЬНЫЙ ЭНДПОИНТ: POST /transfer
     async function apiTransferNFT(fromToken, nftId, buyerUsername){
         let r=await fetch(`${API_BASE}/transfer`,{
             method:'POST',
@@ -303,6 +297,48 @@
         });
     }
     
+    // ==================== ЗАПИСЬ ИСТОРИИ ВЫВОДОВ ====================
+    async function recordWithdrawal(withdrawType, amount, itemName, recipient){
+        await supabase.from('withdrawals').insert({
+            user_id:supabaseUserId,
+            username:currentUser.username,
+            withdraw_type:withdrawType,
+            amount:amount || null,
+            item_name:itemName || null,
+            recipient:recipient,
+            status:'completed',
+            created_at:new Date().toISOString()
+        });
+    }
+    
+    async function loadWithdrawals(){
+        let {data:withdrawals,error}=await supabase
+            .from('withdrawals')
+            .select('*')
+            .eq('user_id',supabaseUserId)
+            .order('created_at',{ascending:false});
+        
+        let container=document.getElementById('withdrawalsList');
+        if(error || !withdrawals || withdrawals.length===0){
+            container.innerHTML='<div class="loading">История выводов пуста</div>';
+            return;
+        }
+        
+        container.innerHTML=withdrawals.map(w=>{
+            let typeIcon=w.withdraw_type==='atm'?'💰':'🎁';
+            let amountText=w.withdraw_type==='atm'?`${w.amount} ATM`:`${w.item_name}`;
+            let date=new Date(w.created_at).toLocaleString();
+            return `
+                <div class="item-card">
+                    <div class="item-name">${typeIcon} ${w.withdraw_type.toUpperCase()}</div>
+                    <div class="item-value">${amountText}</div>
+                    <div style="font-size:11px; color:#666;">→ ${w.recipient}</div>
+                    <div style="font-size:10px; color:#444; margin-top:5px;">${date}</div>
+                </div>
+            `;
+        }).join('');
+    }
+    
     // ==================== АВТОРИЗАЦИЯ ====================
     async function login(){
         let u=document.getElementById('loginUsername').value.trim();
@@ -337,24 +373,28 @@
     
     // ==================== ВЫВОД ATM ====================
     async function withdrawATM(){
-        let username=document.getElementById('withdrawUsername').value.trim();
         let amount=parseInt(document.getElementById('withdrawAmount').value);
-        if(!username){alert('Введите никнейм получателя');return;}
         if(!amount||amount<=0){alert('Введите сумму');return;}
         if(amount>balance){alert(`Недостаточно ATM. Доступно: ${balance}`);return;}
         if(!bankAccount){alert('Банковский аккаунт не настроен');return;}
+        
         try{
             let bankData=await getBankTokenAndId();
             if(!bankData){alert('Не удалось авторизовать банковский аккаунт');return;}
+            
             let comment=`Вывод средств от пользователя ${currentUser.username} на сумму ${amount} ATM`;
-            await apiTransfer(bankData.token, username, amount, comment);
+            await apiTransfer(bankData.token, currentUser.username, amount, comment);
+            
             balance-=amount;
             await saveToSupabase();
+            
+            await recordWithdrawal('atm', amount, null, currentUser.username);
+            
             await refresh();
-            alert(`✅ Успешно выведено ${amount} ATM пользователю ${username}`);
-            document.getElementById('withdrawUsername').value='';
+            
+            alert(`✅ Успешно выведено ${amount} ATM на ваш аккаунт ${currentUser.username}`);
             document.getElementById('withdrawAmount').value='';
-            document.getElementById('withdrawModal').style.display='none';
+            document.getElementById('withdrawAtmModal').style.display='none';
         }catch(e){ alert('Ошибка вывода: '+e.message); }
     }
     
@@ -377,10 +417,8 @@
     }
     
     // ==================== ВЫВОД NFT ====================
-    async function withdrawNFT(nftName, recipientUsername){
+    async function withdrawNFT(nftName){
         if(!bankAccount){ alert('❌ Банковский аккаунт не настроен'); return false; }
-        if(!recipientUsername){ alert('❌ Введите никнейм получателя'); return false; }
-        if(!recipientUsername.startsWith('@')) recipientUsername='@'+recipientUsername;
         
         let itemIndex=inventory.findIndex(i=>i.name===nftName);
         if(itemIndex===-1){ alert('❌ NFT не найден в инвентаре'); return false; }
@@ -390,7 +428,6 @@
             if(!bankData){ alert('❌ Не удалось авторизовать банковский аккаунт'); return false; }
             
             let bankNFTs=await apiGetUserNFTs(bankData.userId, bankData.token);
-            console.log('Bank NFTs:', bankNFTs);
             
             let targetNFT=null, nftId=null;
             for(let nft of bankNFTs){
@@ -403,17 +440,20 @@
             }
             
             if(!targetNFT||!nftId){
-                alert(`❌ NFT "${nftName}" не найден в банковском аккаунте. Доступные: ${bankNFTs.map(n=>n.name||n.title).join(', ')}`);
+                alert(`❌ NFT "${nftName}" не найден в банковском аккаунте`);
                 return false;
             }
             
-            await apiTransferNFT(bankData.token, nftId, recipientUsername);
+            await apiTransferNFT(bankData.token, nftId, currentUser.username);
             
             inventory.splice(itemIndex,1);
             await saveToSupabase();
+            
+            await recordWithdrawal('nft', null, nftName, currentUser.username);
+            
             await refresh();
             
-            alert(`✅ NFT "${nftName}" успешно передан пользователю ${recipientUsername}`);
+            alert(`✅ NFT "${nftName}" успешно выведен на ваш аккаунт ${currentUser.username}`);
             return true;
         }catch(e){
             console.error('Withdraw NFT error:',e);
@@ -495,32 +535,10 @@
             alert(`✅ "${itemName}" продан за ${itemValue} ATM`);
         };});
         
-        document.querySelectorAll('.withdraw-nft-btn').forEach(btn=>{btn.onclick=()=>{
-            currentNFTToWithdraw=btn.dataset.name;
-            document.getElementById('withdrawNFTName').innerHTML=`Вывод: <strong>${btn.dataset.name}</strong>`;
-            document.getElementById('nftRecipientUsername').value='';
-            document.getElementById('withdrawNFTModal').style.display='flex';
+        document.querySelectorAll('.withdraw-nft-btn').forEach(btn=>{btn.onclick=async()=>{
+            let itemName=btn.dataset.name;
+            await withdrawNFT(itemName);
         };});
-    }
-    
-    async function confirmWithdrawNFT(){
-        let recipient=document.getElementById('nftRecipientUsername').value.trim();
-        if(!recipient){ alert('Введите никнейм получателя'); return; }
-        if(!recipient.startsWith('@')) recipient='@'+recipient;
-        let success=await withdrawNFT(currentNFTToWithdraw, recipient);
-        if(success){
-            let idx=inventory.findIndex(i=>i.name===currentNFTToWithdraw);
-            if(idx!==-1) inventory.splice(idx,1);
-            await saveToSupabase();
-            await refresh();
-        }
-        document.getElementById('withdrawNFTModal').style.display='none';
-        currentNFTToWithdraw=null;
-    }
-    
-    function cancelWithdrawNFT(){
-        document.getElementById('withdrawNFTModal').style.display='none';
-        currentNFTToWithdraw=null;
     }
     
     // ==================== ОБНОВЛЕНИЕ ====================
@@ -530,18 +548,22 @@
         document.getElementById('atmBalance').innerHTML=`${balance} <small>ATM</small>`;
         document.getElementById('atmBalance2').innerHTML=`${balance} <small>ATM</small>`;
         await loadInventory();
+        if(document.querySelector('.tab.active')?.dataset.tab === 'withdrawals'){
+            await loadWithdrawals();
+        }
     }
     
     // ==================== ТАБЫ ====================
     function initTabs(){
         document.querySelectorAll('.tab').forEach(t=>{
-            t.onclick=()=>{
+            t.onclick=async()=>{
                 let n=t.dataset.tab;
                 document.querySelectorAll('.tab').forEach(tt=>tt.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
                 t.classList.add('active');
                 document.getElementById(`${n}Tab`).classList.add('active');
-                if(n==='inventory') loadInventory();
+                if(n==='inventory') await loadInventory();
+                if(n==='withdrawals') await loadWithdrawals();
             };
         });
     }
@@ -551,11 +573,12 @@
     document.getElementById('logoutBtn').onclick=logout;
     document.getElementById('refreshBtn').onclick=refresh;
     document.getElementById('depositBtn').onclick=deposit;
-    document.getElementById('withdrawBtn').onclick=()=>document.getElementById('withdrawModal').style.display='flex';
+    document.getElementById('withdrawAtmBtn').onclick=()=>{
+        document.getElementById('currentUsernameDisplay').innerText=currentUser.username;
+        document.getElementById('withdrawAtmModal').style.display='flex';
+    };
     document.getElementById('confirmWithdrawBtn').onclick=withdrawATM;
-    document.getElementById('cancelWithdrawBtn').onclick=()=>document.getElementById('withdrawModal').style.display='none';
-    document.getElementById('confirmWithdrawNFTBtn').onclick=confirmWithdrawNFT;
-    document.getElementById('cancelWithdrawNFTBtn').onclick=cancelWithdrawNFT;
+    document.getElementById('cancelWithdrawBtn').onclick=()=>document.getElementById('withdrawAtmModal').style.display='none';
     document.getElementById('closeModalBtn').onclick=()=>document.getElementById('modal').style.display='none';
     document.getElementById('closeSlotBtn').onclick=closeSlot;
     
