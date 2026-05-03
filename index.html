@@ -139,7 +139,7 @@
     // ==================== КОНФИГУРАЦИЯ ====================
     const API_BASE = 'https://atomglidedev.ru';
     const DEPOSIT_RECIPIENT = '@atomcases';
-    const MIN_WITHDRAW_AMOUNT = 15; // Минимальная сумма вывода
+    const MIN_WITHDRAW_AMOUNT = 15;
     
     const SUPABASE_URL = 'https://pmybrbmkanzbsmghhein.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_JYy-UIU1s8gH1EfSv2Bqew_oM5MIKuP';
@@ -148,26 +148,6 @@
     let currentUser = null, token = null, balance = 0, inventory = [], lastFree = null, slotTimeout = null;
     let supabaseUserId = null;
     let bankAccount = null;
-    
-    // Кейсы
-    const cases = [
-        { id:1, name:'обычный кейс', cost:10, icon:'📦' },
-        { id:2, name:'редкий кейс', cost:50, icon:'✨' },
-        { id:3, name:'эпический кейс', cost:100, icon:'🔥' },
-        { id:4, name:'легендарный кейс', cost:250, icon:'👑' },
-        { id:5, name:'бесплатный кейс', cost:0, icon:'🎁' },
-        { id:6, name:'Teddy кейс', cost:50, icon:'🧸' }
-    ];
-    
-    // Награды
-    const rewards = {
-        1: [{type:'atm',val:15,chance:35},{type:'atm',val:25,chance:30},{type:'nft',name:'🎀 Бантик',value:30,chance:20},{type:'nft',name:'🍬 Конфетка',value:20,chance:10},{type:'atm',val:50,chance:5}],
-        2: [{type:'nft',name:'🎨 Аватарка',value:80,chance:35},{type:'nft',name:'🖼️ Рамка',value:70,chance:30},{type:'atm',val:75,chance:20},{type:'nft',name:'✨ Анимация',value:150,chance:10},{type:'atm',val:150,chance:5}],
-        3: [{type:'nft',name:'🎭 Маска',value:200,chance:40},{type:'atm',val:120,chance:30},{type:'nft',name:'⚡ Эффект',value:250,chance:20},{type:'atm',val:250,chance:10}],
-        4: [{type:'nft',name:'🏆 Трофей',value:500,chance:50},{type:'atm',val:300,chance:30},{type:'nft',name:'⭐ Эксклюзив',value:800,chance:20}],
-        5: [{type:'atm',val:5,chance:50},{type:'nft',name:'🍪 Печенька',value:10,chance:40},{type:'atm',val:10,chance:10}],
-        6: [{type:'nft',name:'🧸 Teddy',value:30,chance:100}]
-    };
     
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     function parseJwt(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}
@@ -292,8 +272,8 @@
     
     async function recordCaseOpening(caseId, reward, spentAtm){
         await supabase.from('case_openings').insert({
-            user_id:supabaseUserId, case_id:caseId, reward_type:reward.type,
-            reward_name:reward.name||null, reward_value:reward.val||reward.value||null,
+            user_id:supabaseUserId, case_id:caseId, reward_type:reward.reward_type,
+            reward_name:reward.reward_name||null, reward_value:reward.reward_value||null,
             spent_atm:spentAtm, created_at:new Date().toISOString()
         });
     }
@@ -375,7 +355,6 @@
     async function withdrawATM(){
         let amount=parseInt(document.getElementById('withdrawAmount').value);
         
-        // Проверка минимальной суммы вывода
         if(!amount || amount <= 0){
             alert('Введите сумму');
             return;
@@ -405,9 +384,7 @@
             
             balance-=amount;
             await saveToSupabase();
-            
             await recordWithdrawal('atm', amount, null, currentUser.username);
-            
             await refresh();
             
             alert(`✅ Успешно выведено ${amount} ATM на ваш аккаунт ${currentUser.username}`);
@@ -437,7 +414,7 @@
     }
     
     // ==================== ВЫВОД NFT ====================
-    async function withdrawNFT(nftName){
+    async function withdrawNFT(nftName, nftValue){
         if(!bankAccount){ alert('❌ Банковский аккаунт не настроен'); return false; }
         
         let itemIndex=inventory.findIndex(i=>i.name===nftName);
@@ -468,9 +445,7 @@
             
             inventory.splice(itemIndex,1);
             await saveToSupabase();
-            
             await recordWithdrawal('nft', null, nftName, currentUser.username);
-            
             await refresh();
             
             alert(`✅ NFT "${nftName}" успешно выведен на ваш аккаунт ${currentUser.username}`);
@@ -482,67 +457,158 @@
         }
     }
     
-    // ==================== КЕЙСЫ ====================
-    async function loadCases(){
-        let html='';
-        for(let c of cases){
-            html+=`<div class="case-card" data-id="${c.id}" data-cost="${c.cost}"><h3>${c.icon} ${c.name}</h3><div class="case-cost">${c.cost>0?`💰 ${c.cost} ATM`:'🎁 бесплатно (раз в день)'}</div><button class="open-btn">открыть</button></div>`;
+    // ==================== КЕЙСЫ (ИЗ БД) ====================
+    async function loadCases() {
+        let { data: dbCases, error } = await supabase
+            .from('cases')
+            .select('*')
+            .eq('is_active', true)
+            .order('id', { ascending: true });
+        
+        if (error) {
+            console.error('Error loading cases:', error);
+            document.getElementById('casesGrid').innerHTML = '<div class="loading">Ошибка загрузки кейсов</div>';
+            return;
         }
-        document.getElementById('casesGrid').innerHTML=html;
-        document.querySelectorAll('.case-card').forEach(card=>{
-            card.querySelector('.open-btn').onclick=async()=>{
-                let id=parseInt(card.dataset.id),cost=parseInt(card.dataset.cost);
-                if(cost===0){
-                    let today=new Date().toDateString();
-                    if(lastFree===today){alert('Бесплатный кейс раз в день');return;}
-                }else if(balance<cost){alert(`Нужно ${cost} ATM`);return;}
-                let rw=rewards[id];
-                let total=rw.reduce((s,r)=>s+r.chance,0);
-                let rand=Math.random()*total;
-                let selected=rw[0];
-                for(let r of rw){if(rand<=r.chance){selected=r;break;}rand-=r.chance;}
-                await showSlot(selected);
-                let spent=cost;
-                if(cost===0){lastFree=new Date().toDateString();spent=0;}
-                else balance-=cost;
-                if(selected.type==='atm'){balance+=selected.val;}
-                else{
-                    let newItem={id:'temp_'+Date.now()+Math.random(), name:selected.name, value:selected.value, receivedAt:new Date().toISOString()};
-                    inventory.unshift(newItem);
-                }
-                await saveToSupabase();
-                await recordCaseOpening(id, selected, spent);
-                await refresh();
+        
+        if (!dbCases || dbCases.length === 0) {
+            document.getElementById('casesGrid').innerHTML = '<div class="loading">Нет доступных кейсов</div>';
+            return;
+        }
+        
+        let html = '';
+        for (let c of dbCases) {
+            html += `<div class="case-card" data-id="${c.id}" data-cost="${c.cost_tokens}">
+                        <h3>${c.background_icon || '📦'} ${c.case_name}</h3>
+                        <div class="case-cost">${c.cost_tokens > 0 ? `💰 ${c.cost_tokens} ATM` : '🎁 бесплатно (раз в день)'}</div>
+                        <button class="open-btn">открыть</button>
+                    </div>`;
+        }
+        document.getElementById('casesGrid').innerHTML = html;
+        
+        document.querySelectorAll('.case-card').forEach(card => {
+            card.querySelector('.open-btn').onclick = async () => {
+                let id = parseInt(card.dataset.id);
+                let cost = parseInt(card.dataset.cost);
+                await openCase(id, cost);
             };
         });
     }
     
-    async function showSlot(r){
-        let slot=document.getElementById('slotMachine'),cont=document.getElementById('slotItems'),res=document.getElementById('slotResult');
-        let icons=['🎁','💰','🎰','✨','🎲'];
-        let final=r.type==='atm'?'💰':'🎁';
-        let html='';
-        for(let i=0;i<30;i++)html+=`<div class="slot-item">${icons[Math.floor(Math.random()*icons.length)]}</div>`;
-        html+=`<div class="slot-item">${final}</div>`;
-        cont.innerHTML=html;
-        slot.style.display='flex';
-        res.innerText='крутим...';
-        cont.style.transition='none';
-        cont.style.transform='translateY(0)';
-        cont.offsetHeight;
-        cont.style.transition='transform 2.5s cubic-bezier(0.25,0.1,0.15,1)';
-        cont.style.transform=`translateY(${-(30*111)}px)`;
-        if(slotTimeout)clearTimeout(slotTimeout);
-        slotTimeout=setTimeout(()=>{res.innerText=r.type==='atm'?`🎉 +${r.val} ATM! 🎉`:r.type==='nft'?`🎉 ${r.name}! 🎉`:'';},2500);
+    async function openCase(caseId, costAtm) {
+        const isFree = (costAtm === 0);
+        
+        if (isFree) {
+            const today = new Date().toDateString();
+            if (lastFree === today) {
+                alert('Бесплатный кейс доступен раз в день');
+                return;
+            }
+        } else {
+            if (balance < costAtm) {
+                alert(`Не хватает ATM. Нужно: ${costAtm} ATM`);
+                return;
+            }
+        }
+        
+        let { data: rewards, error } = await supabase
+            .from('case_rewards')
+            .select('*')
+            .eq('case_id', caseId);
+        
+        if (error || !rewards || rewards.length === 0) {
+            alert('Ошибка загрузки наград кейса');
+            return;
+        }
+        
+        const totalChance = rewards.reduce((s, r) => s + r.chance, 0);
+        let rand = Math.random() * totalChance;
+        let selected = rewards[0];
+        for (const r of rewards) {
+            if (rand <= r.chance) {
+                selected = r;
+                break;
+            }
+            rand -= r.chance;
+        }
+        
+        await showSlotAnimation(selected);
+        
+        let spent = costAtm;
+        if (isFree) {
+            lastFree = new Date().toDateString();
+            spent = 0;
+        } else {
+            balance -= costAtm;
+        }
+        
+        let resultMsg = '';
+        
+        if (selected.reward_type === 'atm') {
+            balance += selected.reward_value;
+            resultMsg = `💰 +${selected.reward_value} ATM!`;
+            await saveToSupabase();
+        } else if (selected.reward_type === 'nft') {
+            inventory.unshift({
+                id: 'temp_' + Date.now() + Math.random(),
+                name: selected.reward_name,
+                value: selected.reward_value,
+                receivedAt: new Date().toISOString()
+            });
+            resultMsg = `🎁 ${selected.reward_name} добавлен в инвентарь!`;
+            await saveToSupabase();
+        }
+        
+        await recordCaseOpening(caseId, selected, spent);
+        await refresh();
+        
+        setTimeout(() => showModal('🎉 Поздравляем!', resultMsg), 2600);
     }
     
-    function closeSlot(){if(slotTimeout)clearTimeout(slotTimeout);document.getElementById('slotMachine').style.display='none';}
+    async function showSlotAnimation(reward) {
+        const slot = document.getElementById('slotMachine');
+        const itemsContainer = document.getElementById('slotItems');
+        const resultDiv = document.getElementById('slotResult');
+        
+        const icons = ['🎁', '💰', '🎰', '✨', '🎲', '🏆'];
+        let finalIcon = reward.reward_type === 'atm' ? '💰' : '🎁';
+        
+        let html = '';
+        for (let i = 0; i < 30; i++) {
+            html += `<div class="slot-item">${icons[Math.floor(Math.random() * icons.length)]}</div>`;
+        }
+        html += `<div class="slot-item">${finalIcon}</div>`;
+        itemsContainer.innerHTML = html;
+        
+        slot.style.display = 'flex';
+        resultDiv.textContent = 'крутим...';
+        
+        itemsContainer.style.transition = 'none';
+        itemsContainer.style.transform = 'translateY(0)';
+        itemsContainer.offsetHeight;
+        itemsContainer.style.transition = 'transform 2.5s cubic-bezier(0.25, 0.1, 0.15, 1)';
+        itemsContainer.style.transform = `translateY(${-(30 * 111)}px)`;
+        
+        if (slotTimeout) clearTimeout(slotTimeout);
+        slotTimeout = setTimeout(() => {
+            if (reward.reward_type === 'atm') {
+                resultDiv.textContent = `🎉 +${reward.reward_value} ATM! 🎉`;
+            } else {
+                resultDiv.textContent = `🎉 ${reward.reward_name}! 🎉`;
+            }
+        }, 2500);
+    }
+    
+    function closeSlot() {
+        if (slotTimeout) clearTimeout(slotTimeout);
+        document.getElementById('slotMachine').style.display = 'none';
+    }
     
     // ==================== ИНВЕНТАРЬ ====================
     async function loadInventory(){
         let grid=document.getElementById('inventoryGrid');
         if(!inventory.length){grid.innerHTML='<div class="loading">У вас пока нет NFT подарков</div>';return;}
-        grid.innerHTML=inventory.map(i=>`<div class="item-card"><div class="item-name">${escapeHtml(i.name)}</div><div class="item-value">💰 Цена: ${i.value} ATM</div><div class="item-actions"><button class="sell-nft-btn" data-id="${i.id}" data-value="${i.value}" data-name="${escapeHtml(i.name)}">💰 Продать за ${i.value} ATM</button><button class="withdraw-nft-btn" data-name="${escapeHtml(i.name)}">🎁 Вывести NFT</button></div></div>`).join('');
+        grid.innerHTML=inventory.map(i=>`<div class="item-card"><div class="item-name">${escapeHtml(i.name)}</div><div class="item-value">💰 Цена: ${i.value} ATM</div><div class="item-actions"><button class="sell-nft-btn" data-id="${i.id}" data-value="${i.value}" data-name="${escapeHtml(i.name)}">💰 Продать за ${i.value} ATM</button><button class="withdraw-nft-btn" data-name="${escapeHtml(i.name)}" data-value="${i.value}">🎁 Вывести NFT</button></div></div>`).join('');
         
         document.querySelectorAll('.sell-nft-btn').forEach(btn=>{btn.onclick=async()=>{
             let itemId=btn.dataset.id, itemValue=parseInt(btn.dataset.value), itemName=btn.dataset.name;
@@ -557,7 +623,8 @@
         
         document.querySelectorAll('.withdraw-nft-btn').forEach(btn=>{btn.onclick=async()=>{
             let itemName=btn.dataset.name;
-            await withdrawNFT(itemName);
+            let itemValue=parseInt(btn.dataset.value);
+            await withdrawNFT(itemName, itemValue);
         };});
     }
     
@@ -571,6 +638,16 @@
         if(document.querySelector('.tab.active')?.dataset.tab === 'withdrawals'){
             await loadWithdrawals();
         }
+    }
+    
+    function showModal(title, msg) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalMessage').textContent = msg;
+        document.getElementById('modal').style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
     }
     
     // ==================== ТАБЫ ====================
@@ -599,7 +676,7 @@
     };
     document.getElementById('confirmWithdrawBtn').onclick=withdrawATM;
     document.getElementById('cancelWithdrawBtn').onclick=()=>document.getElementById('withdrawAtmModal').style.display='none';
-    document.getElementById('closeModalBtn').onclick=()=>document.getElementById('modal').style.display='none';
+    document.getElementById('closeModalBtn').onclick=closeModal;
     document.getElementById('closeSlotBtn').onclick=closeSlot;
     
     initTabs();
