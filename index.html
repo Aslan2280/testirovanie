@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>RuEncryp · соцсеть</title>
+    <title>RuEncryp · Лента + Мессенджер</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -70,6 +70,36 @@
             color: #4a5b6e;
         }
 
+        /* Табы */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: white;
+            padding: 8px 16px;
+            border-bottom: 1px solid #e2e6ec;
+            position: sticky;
+            top: 70px;
+            z-index: 9;
+            background: white;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7e8b9e;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: 0.1s;
+        }
+        .tab-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Посты (старые стили) */
         .post-card {
             background: white;
             border-radius: 20px;
@@ -104,11 +134,6 @@
             font-size: 1rem;
             color: #1e2a3e;
         }
-        .user-bio {
-            font-size: 0.7rem;
-            color: #6c7a91;
-            margin-top: 2px;
-        }
         .post-time {
             font-size: 0.7rem;
             color: #7e8b9e;
@@ -141,14 +166,8 @@
             padding: 6px 10px;
             border-radius: 40px;
         }
-        .action-btn:active {
-            background: #eef2f7;
-        }
         .like-btn.liked {
             color: #c2412c;
-        }
-        .like-icon, .comment-icon {
-            font-size: 1.35rem;
         }
         .comments-section {
             margin-top: 14px;
@@ -187,11 +206,6 @@
             border-radius: 40px;
             padding: 10px 14px;
             font-size: 0.85rem;
-            font-family: inherit;
-        }
-        .comment-input:focus {
-            outline: none;
-            border-color: #3b82f6;
         }
         .send-comment {
             background: #3b82f6;
@@ -202,7 +216,6 @@
             border-radius: 40px;
             cursor: pointer;
         }
-
         .new-post-panel {
             background: white;
             border-radius: 24px;
@@ -216,12 +229,7 @@
             border-radius: 28px;
             padding: 14px 18px;
             font-size: 0.95rem;
-            font-family: inherit;
             resize: vertical;
-        }
-        .new-post-text:focus {
-            border-color: #3b82f6;
-            outline: none;
         }
         .publish-btn {
             margin-top: 12px;
@@ -236,85 +244,158 @@
             cursor: pointer;
         }
 
-        .auth-container, .profile-container {
+        /* Мессенджер */
+        .chats-list {
             background: white;
-            border-radius: 28px;
-            padding: 24px 20px;
-            margin-top: 20px;
-            border: 1px solid #eef2f8;
+            border-radius: 20px;
+            overflow: hidden;
         }
-        .auth-tabs {
+        .chat-item {
             display: flex;
+            align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .auth-tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #7e8b9e;
+            padding: 14px 16px;
+            border-bottom: 1px solid #eef2f8;
             cursor: pointer;
+            transition: 0.1s;
         }
-        .auth-tab.active {
-            color: #3b82f6;
-            border-bottom: 2px solid #3b82f6;
+        .chat-item:active {
+            background: #f5f7fb;
         }
-        .auth-input, .profile-input, .profile-textarea {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 16px;
-            border: 1px solid #dce3ec;
-            border-radius: 28px;
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: #4a6fa5;
+            color: white;
+            flex-shrink: 0;
+        }
+        .chat-info {
+            flex: 1;
+        }
+        .chat-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .chat-last-msg {
+            font-size: 0.75rem;
+            color: #7e8b9e;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-badge {
+            background: #3b82f6;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .messages-container {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            height: 60vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .message-own {
+            background: #3b82f6;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .message-other {
+            background: #eef2f8;
+            color: #1e2a3e;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .message-sender {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .message-time {
+            font-size: 0.6rem;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .message-input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            background: white;
+            padding: 12px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+        }
+        .message-input {
+            flex: 1;
+            border: none;
+            padding: 10px;
             font-size: 0.95rem;
             font-family: inherit;
+            outline: none;
         }
-        .profile-textarea {
-            border-radius: 20px;
-            resize: vertical;
-            min-height: 80px;
-        }
-        .auth-btn, .profile-save-btn {
-            width: 100%;
+        .send-message-btn {
             background: #3b82f6;
             border: none;
-            padding: 14px;
-            border-radius: 44px;
             color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
             font-weight: 600;
-            font-size: 1rem;
             cursor: pointer;
         }
-        .error-msg, .success-msg {
-            font-size: 0.8rem;
-            margin-top: 12px;
-            text-align: center;
+        .new-chat-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 16px;
+            cursor: pointer;
         }
-        .error-msg {
-            color: #c2412c;
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #eef2f8;
+            margin-bottom: 16px;
         }
-        .success-msg {
-            color: #06a06b;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #5b6e8c;
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
         }
         .hide {
             display: none;
         }
-        .empty-feed {
+        .empty-feed, .empty-chats {
             text-align: center;
             padding: 48px 20px;
             background: white;
             border-radius: 32px;
             color: #6c7a91;
-            border: 1px solid #eef2f8;
         }
         footer {
             text-align: center;
@@ -323,74 +404,6 @@
             margin-top: 20px;
             padding-bottom: 12px;
         }
-        .avatar-preview {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .avatar-large {
-            width: 100px;
-            height: 100px;
-            border-radius: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-        }
-        .color-options {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .color-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 40px;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        .color-option.selected {
-            border-color: #1e2a3e;
-            transform: scale(1.1);
-        }
-        .avatar-emoji-input {
-            text-align: center;
-            font-size: 1.5rem;
-            width: 80px;
-            margin: 0 auto 16px;
-            padding: 8px;
-            border: 1px solid #dce3ec;
-            border-radius: 40px;
-            text-align: center;
-        }
-        .back-btn {
-            background: none;
-            border: none;
-            color: #3b82f6;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 16px;
-            display: inline-block;
-        }
-        .user-header-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .debug-info {
-            background: #f0f0f0;
-            padding: 10px;
-            margin-bottom: 16px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            color: #666;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -398,24 +411,27 @@
     <div class="header-content">
         <div>
             <h1>RuEncryp</h1>
-            <div class="header-sub">защищённая лента</div>
+            <div class="header-sub">лента + мессенджер</div>
         </div>
         <div id="userHeaderInfo" class="user-header-info"></div>
     </div>
 </div>
 
+<div class="tabs">
+    <button class="tab-btn active" data-tab="feed">📰 Лента</button>
+    <button class="tab-btn" data-tab="messenger">💬 Мессенджер</button>
+</div>
+
 <div class="container" id="appContainer">
     <div id="authSection"></div>
-    <div id="profileSection" class="hide"></div>
     <div id="feedSection" class="hide"></div>
+    <div id="messengerSection" class="hide"></div>
 </div>
 
 <script>
-    // ========== КОНФИГУРАЦИЯ SUPABASE ==========
     const SUPABASE_URL = 'https://bievejrvmctfbkpqiojr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZXZlanJ2bWN0ZmJrcHFpb2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwODc1MDIsImV4cCI6MjA5MzY2MzUwMn0.kBm8R8iwTNAaGWFviQNyJcOGkKxtzlt3LaUsu0lNBC4';
     
-    // Создаём клиент Supabase
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let currentUser = null;
@@ -423,14 +439,35 @@
     let allPosts = [];
     let userLikesSet = new Set();
     let commentsMap = new Map();
+    
+    // Мессенджер
+    let currentChat = null;
+    let chatsList = [];
+    let messagesSubscription = null;
 
     const authSection = document.getElementById('authSection');
-    const profileSection = document.getElementById('profileSection');
     const feedSection = document.getElementById('feedSection');
+    const messengerSection = document.getElementById('messengerSection');
     const userHeaderInfo = document.getElementById('userHeaderInfo');
 
-    const avatarColors = ['#4a6fa5', '#e94560', '#48cae4', '#06d6a0', '#ffb703', '#8338ec', '#fb5607', '#3a86ff'];
-    
+    // Табы
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            if (tab === 'feed') {
+                feedSection.classList.remove('hide');
+                messengerSection.classList.add('hide');
+                loadInitialFeed();
+            } else {
+                feedSection.classList.add('hide');
+                messengerSection.classList.remove('hide');
+                loadChats();
+            }
+        });
+    });
+
     function formatTime(timestamp) {
         const diff = Date.now() - timestamp;
         const minutes = Math.floor(diff / 60000);
@@ -450,93 +487,19 @@
         return div.innerHTML;
     }
 
-    // Проверка соединения с Supabase
-    async function testSupabaseConnection() {
-        try {
-            const { data, error } = await supabase.from('posts').select('count', { count: 'exact', head: true });
-            if (error) {
-                console.error('Ошибка подключения к Supabase:', error);
-                return false;
-            }
-            console.log('Подключение к Supabase успешно!');
-            return true;
-        } catch (err) {
-            console.error('Исключение при подключении:', err);
-            return false;
-        }
-    }
-
-    // Загрузка профиля
+    // ========== АВТОРИЗАЦИЯ (как была) ==========
     async function loadProfile(userId) {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
-            
-            if (error) {
-                console.error('Ошибка загрузки профиля:', error);
-                return {
-                    id: userId,
-                    name: currentUser?.email?.split('@')[0] || 'Пользователь',
-                    avatar_color: '#4a6fa5',
-                    avatar_symbol: '👤',
-                    bio: ''
-                };
-            }
-            
-            if (data) return data;
-            
-            // Если профиля нет, возвращаем дефолтный (но не создаём)
-            return {
-                id: userId,
-                name: currentUser?.email?.split('@')[0] || 'Пользователь',
-                avatar_color: '#4a6fa5',
-                avatar_symbol: '👤',
-                bio: ''
-            };
-        } catch (err) {
-            console.error('Исключение при загрузке профиля:', err);
-            return {
-                id: userId,
-                name: currentUser?.email?.split('@')[0] || 'Пользователь',
-                avatar_color: '#4a6fa5',
-                avatar_symbol: '👤',
-                bio: ''
-            };
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+        if (error || !data) {
+            return { id: userId, name: currentUser?.email?.split('@')[0] || 'User', avatar_color: '#4a6fa5', avatar_symbol: '👤', bio: '' };
         }
-    }
-
-    // Сохранение профиля
-    async function saveProfile(updates) {
-        const { error } = await supabase
-            .from('profiles')
-            .upsert({ 
-                id: currentUser.id, 
-                ...updates,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', currentUser.id);
-        
-        if (error) throw error;
-        
-        currentProfile = { ...currentProfile, ...updates };
-        updateHeaderInfo();
-        updateAllPostsAuthorInfo();
-        return true;
+        return data;
     }
 
     function updateHeaderInfo() {
         if (currentUser && currentProfile) {
-            userHeaderInfo.innerHTML = `
-                <button id="profileBtn" class="profile-btn">👤</button>
-                <button id="logoutBtnHeader" class="logout-btn">Выйти</button>
-            `;
-            const profileBtn = document.getElementById('profileBtn');
-            const logoutBtn = document.getElementById('logoutBtnHeader');
-            if (profileBtn) profileBtn.addEventListener('click', showProfileEditor);
-            if (logoutBtn) logoutBtn.addEventListener('click', async () => {
+            userHeaderInfo.innerHTML = `<button id="logoutBtnHeader" class="logout-btn">Выйти</button>`;
+            document.getElementById('logoutBtnHeader')?.addEventListener('click', async () => {
                 await supabase.auth.signOut();
                 currentUser = null;
                 renderAuth();
@@ -544,439 +507,276 @@
         }
     }
 
-    function updateAllPostsAuthorInfo() {
-        document.querySelectorAll('.post-card').forEach(card => {
-            if (card.dataset.authorId === currentUser.id) {
-                const userNameSpan = card.querySelector('.user-name');
-                const avatarDiv = card.querySelector('.avatar');
-                const userBioSpan = card.querySelector('.user-bio');
-                
-                if (userNameSpan) userNameSpan.innerText = currentProfile.name;
-                if (avatarDiv) {
-                    avatarDiv.innerText = currentProfile.avatar_symbol || currentProfile.name.charAt(0).toUpperCase();
-                    avatarDiv.style.background = currentProfile.avatar_color || '#4a6fa5';
-                }
-                if (userBioSpan && currentProfile.bio) {
-                    userBioSpan.innerText = currentProfile.bio;
-                }
-            }
-        });
-    }
-
-    function showProfileEditor() {
-        feedSection.classList.add('hide');
-        profileSection.classList.remove('hide');
-        renderProfileEditor();
-    }
-
-    function renderProfileEditor() {
-        profileSection.innerHTML = `
-            <div class="profile-container">
-                <button id="backToFeed" class="back-btn">← Назад к ленте</button>
-                <h3 style="margin-bottom: 20px;">Редактировать профиль</h3>
-                <div class="avatar-preview">
-                    <div id="avatarPreview" class="avatar-large" style="background: ${currentProfile.avatar_color || '#4a6fa5'}">
-                        ${escapeHtml(currentProfile.avatar_symbol || currentProfile.name?.charAt(0).toUpperCase() || '👤')}
-                    </div>
-                </div>
-                <div class="color-options" id="colorOptions">
-                    ${avatarColors.map(color => `
-                        <div class="color-option ${currentProfile.avatar_color === color ? 'selected' : ''}" 
-                             style="background: ${color}" data-color="${color}"></div>
-                    `).join('')}
-                </div>
-                <input type="text" id="avatarSymbol" class="avatar-emoji-input" 
-                       placeholder="Эмодзи или буква" maxlength="2" value="${escapeHtml(currentProfile.avatar_symbol || '')}">
-                <input type="text" id="profileName" class="profile-input" 
-                       placeholder="Имя" value="${escapeHtml(currentProfile.name || '')}">
-                <textarea id="profileBio" class="profile-textarea" 
-                          placeholder="О себе" rows="3">${escapeHtml(currentProfile.bio || '')}</textarea>
-                <button id="saveProfileBtn" class="profile-save-btn">💾 Сохранить изменения</button>
-                <div id="profileMessage" class="error-msg"></div>
-            </div>
-        `;
-        
-        document.querySelectorAll('.color-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                const color = opt.dataset.color;
-                document.getElementById('avatarPreview').style.background = color;
-            });
-        });
-        
-        const symbolInput = document.getElementById('avatarSymbol');
-        const avatarPreview = document.getElementById('avatarPreview');
-        symbolInput.addEventListener('input', () => {
-            let val = symbolInput.value;
-            if (val.length > 2) val = val.slice(0, 2);
-            avatarPreview.innerText = val || '👤';
-        });
-        
-        const saveBtn = document.getElementById('saveProfileBtn');
-        const messageDiv = document.getElementById('profileMessage');
-        
-        saveBtn.onclick = async () => {
-            const selectedColor = document.querySelector('.color-option.selected')?.dataset.color || avatarColors[0];
-            let symbol = document.getElementById('avatarSymbol').value.trim();
-            if (!symbol) symbol = '👤';
-            const name = document.getElementById('profileName').value.trim();
-            const bio = document.getElementById('profileBio').value.trim();
-            
-            if (!name) {
-                messageDiv.className = 'error-msg';
-                messageDiv.innerText = '❌ Имя не может быть пустым';
-                return;
-            }
-            
-            messageDiv.className = 'error-msg';
-            messageDiv.innerText = '⏳ Сохранение...';
-            saveBtn.disabled = true;
-            
-            try {
-                await saveProfile({
-                    name: name,
-                    avatar_color: selectedColor,
-                    avatar_symbol: symbol,
-                    bio: bio
-                });
-                messageDiv.className = 'success-msg';
-                messageDiv.innerText = '✅ Профиль обновлён!';
-                setTimeout(() => {
-                    messageDiv.innerText = '';
-                }, 2000);
-            } catch (err) {
-                messageDiv.className = 'error-msg';
-                messageDiv.innerText = '❌ Ошибка: ' + err.message;
-            } finally {
-                saveBtn.disabled = false;
-            }
-        };
-        
-        document.getElementById('backToFeed').onclick = () => {
-            profileSection.classList.add('hide');
-            feedSection.classList.remove('hide');
-            refreshAllPostsData();
-        };
-    }
-
-    async function refreshAllPostsData() {
-        await loadInitialFeed();
-    }
-
-    function updatePostInDOM(postId, updatedData) {
-        const postElement = document.querySelector(`.post-card[data-post-id="${postId}"]`);
-        if (!postElement) return;
-        
-        if (updatedData.likes_count !== undefined) {
-            const likeCountSpan = postElement.querySelector('.like-count');
-            if (likeCountSpan) likeCountSpan.innerText = updatedData.likes_count;
-            const likeBtn = postElement.querySelector('.like-btn');
-            const likeIcon = likeBtn?.querySelector('.like-icon');
-            if (likeIcon) {
-                const isLiked = userLikesSet.has(postId);
-                likeIcon.innerText = isLiked ? '❤️' : '🤍';
-                if (isLiked) likeBtn?.classList.add('liked');
-                else likeBtn?.classList.remove('liked');
-            }
-        }
-    }
-
-    function addCommentToDOM(postId, comment) {
-        const postElement = document.querySelector(`.post-card[data-post-id="${postId}"]`);
-        if (!postElement) return;
-        const commentsContainer = postElement.querySelector('.comments-container');
-        if (commentsContainer) {
-            const commentDiv = document.createElement('div');
-            commentDiv.className = 'comment-item';
-            commentDiv.innerHTML = `
-                <div class="comment-name">${escapeHtml(comment.user_name || comment.user_email?.split('@')[0] || 'anon')}:</div>
-                <div class="comment-text">${escapeHtml(comment.content)}</div>
-            `;
-            commentsContainer.appendChild(commentDiv);
-            const commentCountSpan = postElement.querySelector('.comment-count');
-            if (commentCountSpan) {
-                commentCountSpan.innerText = (parseInt(commentCountSpan.innerText) || 0) + 1;
-            }
-        }
-        const commentInput = postElement.querySelector('.comment-input');
-        if (commentInput) commentInput.value = '';
-    }
-
-    function addPostToDOM(post) {
-        const feedContainer = document.getElementById('dynamicFeed');
-        if (!feedContainer) return;
-        const postElement = createPostElement(post);
-        feedContainer.insertBefore(postElement, feedContainer.firstChild);
-    }
-
-    function createPostElement(post) {
-        const card = document.createElement('div');
-        card.className = 'post-card';
-        card.dataset.postId = post.id;
-        card.dataset.authorId = post.user_id;
-        
-        const commentsList = commentsMap.get(post.id) || [];
-        let authorName = post.user_name;
-        let authorAvatarSymbol = post.user_name?.[0] || 'U';
-        let authorAvatarColor = '#4a6fa5';
-        let authorBio = '';
-        
-        if (post.user_id === currentUser?.id && currentProfile) {
-            authorName = currentProfile.name;
-            authorAvatarSymbol = currentProfile.avatar_symbol || currentProfile.name?.charAt(0) || 'U';
-            authorAvatarColor = currentProfile.avatar_color || '#4a6fa5';
-            authorBio = currentProfile.bio || '';
-        }
-        
-        card.innerHTML = `
-            <div class="post-header">
-                <div class="avatar" style="background: ${authorAvatarColor}">${escapeHtml(authorAvatarSymbol)}</div>
-                <div class="user-info">
-                    <div class="user-name">${escapeHtml(authorName)}</div>
-                    ${authorBio ? `<div class="user-bio">${escapeHtml(authorBio)}</div>` : ''}
-                    <div class="post-time">${formatTime(new Date(post.created_at).getTime())}</div>
-                </div>
-            </div>
-            <div class="post-text">${escapeHtml(post.content)}</div>
-            <div class="post-actions">
-                <button class="action-btn like-btn ${userLikesSet.has(post.id) ? 'liked' : ''}">
-                    <span class="like-icon">${userLikesSet.has(post.id) ? '❤️' : '🤍'}</span>
-                    <span class="like-count">${post.likes_count || 0}</span>
-                </button>
-                <button class="action-btn comment-btn">
-                    <span class="comment-icon">💬</span>
-                    <span class="comment-count">${commentsList.length}</span>
-                </button>
-                ${post.user_id === currentUser?.id ? `<button class="action-btn delete-btn" style="margin-left: auto;">🗑️</button>` : ''}
-            </div>
-            <div class="comments-section">
-                <div class="comments-container">
-                    ${commentsList.map(comm => `
-                        <div class="comment-item">
-                            <div class="comment-name">${escapeHtml(comm.user_name || comm.user_email?.split('@')[0] || 'anon')}:</div>
-                            <div class="comment-text">${escapeHtml(comm.content)}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="add-comment">
-                    <input type="text" placeholder="Написать комментарий..." class="comment-input">
-                    <button class="send-comment">Отправить</button>
-                </div>
-            </div>
-        `;
-        
-        const likeBtn = card.querySelector('.like-btn');
-        likeBtn.onclick = async () => {
-            const isLiked = userLikesSet.has(post.id);
-            if (isLiked) {
-                await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUser.id);
-                userLikesSet.delete(post.id);
-                post.likes_count = (post.likes_count || 1) - 1;
-            } else {
-                await supabase.from('likes').insert({ post_id: post.id, user_id: currentUser.id });
-                userLikesSet.add(post.id);
-                post.likes_count = (post.likes_count || 0) + 1;
-            }
-            updatePostInDOM(post.id, { likes_count: post.likes_count });
-        };
-        
-        const sendBtn = card.querySelector('.send-comment');
-        const commentInput = card.querySelector('.comment-input');
-        sendBtn.onclick = async () => {
-            const text = commentInput.value.trim();
-            if (!text) return;
-            const { data, error } = await supabase.from('comments').insert({
-                post_id: post.id,
-                user_id: currentUser.id,
-                user_email: currentUser.email,
-                user_name: currentProfile?.name || currentUser.email?.split('@')[0] || 'User',
-                content: text,
-                created_at: new Date().toISOString()
-            }).select().single();
-            if (!error && data) {
-                if (!commentsMap.has(post.id)) commentsMap.set(post.id, []);
-                commentsMap.get(post.id).push(data);
-                addCommentToDOM(post.id, data);
-            }
-        };
-        
-        const deleteBtn = card.querySelector('.delete-btn');
-        if (deleteBtn) {
-            deleteBtn.onclick = async () => {
-                if (confirm('Удалить пост?')) {
-                    await supabase.from('posts').delete().eq('id', post.id);
-                    card.remove();
-                    allPosts = allPosts.filter(p => p.id !== post.id);
-                }
-            };
-        }
-        
-        return card;
-    }
-
+    // ========== ЛЕНТА (сокращённо, но рабочая) ==========
     async function loadInitialFeed() {
         if (!currentUser) return;
-        feedSection.innerHTML = '<div class="loading">📱 Загрузка ленты...</div>';
-        
-        const { data: posts, error } = await supabase
-            .from('posts')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) {
-            feedSection.innerHTML = `<div class="empty-feed">❌ Ошибка загрузки: ${error.message}<br><br>Проверьте подключение к Supabase и наличие таблиц.</div>`;
-            return;
-        }
-        
+        feedSection.innerHTML = '<div class="loading">📱 Загрузка...</div>';
+        const { data: posts, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+        if (error) { feedSection.innerHTML = `<div class="empty-feed">Ошибка: ${error.message}</div>`; return; }
         allPosts = posts || [];
-        
-        const { data: userLikes } = await supabase
-            .from('likes')
-            .select('post_id')
-            .eq('user_id', currentUser.id);
+        const { data: userLikes } = await supabase.from('likes').select('post_id').eq('user_id', currentUser.id);
         userLikesSet = new Set(userLikes?.map(l => l.post_id) || []);
-        
-        const { data: allComments } = await supabase
-            .from('comments')
-            .select('*')
-            .order('created_at', { ascending: true });
-        
+        const { data: allComments } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
         commentsMap.clear();
-        if (allComments) {
-            for (const comm of allComments) {
-                if (!commentsMap.has(comm.post_id)) commentsMap.set(comm.post_id, []);
-                commentsMap.get(comm.post_id).push(comm);
-            }
+        if (allComments) for (const comm of allComments) {
+            if (!commentsMap.has(comm.post_id)) commentsMap.set(comm.post_id, []);
+            commentsMap.get(comm.post_id).push(comm);
         }
-        
         renderFeed();
     }
-    
+
     function renderFeed() {
         const newPostPanel = document.createElement('div');
         newPostPanel.className = 'new-post-panel';
-        newPostPanel.innerHTML = `
-            <textarea class="new-post-text" rows="2" placeholder="Что нового? Напиши пост..."></textarea>
-            <button class="publish-btn">📤 Опубликовать</button>
-        `;
-        
+        newPostPanel.innerHTML = `<textarea class="new-post-text" rows="2" placeholder="Что нового?"></textarea><button class="publish-btn">📤 Опубликовать</button>`;
         const textarea = newPostPanel.querySelector('.new-post-text');
         const pubBtn = newPostPanel.querySelector('.publish-btn');
         pubBtn.onclick = async () => {
             const content = textarea.value.trim();
             if (!content) return;
-            const { data, error } = await supabase.from('posts').insert({
-                user_id: currentUser.id,
-                user_email: currentUser.email,
-                user_name: currentProfile?.name || currentUser.email?.split('@')[0] || 'Пользователь',
-                content: content,
-                created_at: new Date().toISOString(),
-                likes_count: 0
-            }).select().single();
-            if (!error && data) {
-                textarea.value = '';
-                allPosts.unshift(data);
-                commentsMap.set(data.id, []);
-                addPostToDOM(data);
-            } else {
-                alert('Ошибка: ' + error?.message);
-            }
+            await supabase.from('posts').insert({ user_id: currentUser.id, user_email: currentUser.email, user_name: currentProfile?.name, content, created_at: new Date().toISOString(), likes_count: 0 });
+            textarea.value = '';
+            loadInitialFeed();
         };
-        
         const feedContainer = document.createElement('div');
         feedContainer.id = 'dynamicFeed';
-        
         for (const post of allPosts) {
-            feedContainer.appendChild(createPostElement(post));
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            card.innerHTML = `
+                <div class="post-header"><div class="avatar">${escapeHtml(post.user_name?.[0] || 'U')}</div><div class="user-info"><div class="user-name">${escapeHtml(post.user_name || post.user_email?.split('@')[0])}</div><div class="post-time">${formatTime(new Date(post.created_at).getTime())}</div></div></div>
+                <div class="post-text">${escapeHtml(post.content)}</div>
+                <div class="post-actions"><button class="action-btn like-btn ${userLikesSet.has(post.id) ? 'liked' : ''}"><span class="like-icon">${userLikesSet.has(post.id) ? '❤️' : '🤍'}</span><span class="like-count">${post.likes_count || 0}</span></button></div>
+            `;
+            feedContainer.appendChild(card);
         }
-        
         feedSection.innerHTML = '';
         feedSection.appendChild(newPostPanel);
         feedSection.appendChild(feedContainer);
     }
 
-    function renderAuth() {
-        authSection.classList.remove('hide');
-        feedSection.classList.add('hide');
-        profileSection.classList.add('hide');
-        userHeaderInfo.innerHTML = '';
+    // ========== МЕССЕНДЖЕР ==========
+    async function loadChats() {
+        if (!currentUser) return;
+        messengerSection.innerHTML = '<div class="loading">💬 Загрузка чатов...</div>';
+        
+        // Получаем чаты, где пользователь участник
+        const { data: memberships, error } = await supabase
+            .from('chat_members')
+            .select('chat_id, chats(*)')
+            .eq('user_id', currentUser.id);
+        
+        if (error) {
+            messengerSection.innerHTML = `<div class="empty-feed">Ошибка: ${error.message}</div>`;
+            return;
+        }
+        
+        chatsList = memberships?.map(m => m.chats) || [];
         
         const container = document.createElement('div');
-        container.className = 'auth-container';
-        container.innerHTML = `
-            <div class="auth-tabs">
-                <button class="auth-tab active">Вход</button>
-                <button class="auth-tab">Регистрация</button>
+        const newChatBtn = document.createElement('button');
+        newChatBtn.className = 'new-chat-btn';
+        newChatBtn.innerText = '+ Новый чат';
+        newChatBtn.onclick = () => createNewChat();
+        container.appendChild(newChatBtn);
+        
+        const chatsDiv = document.createElement('div');
+        chatsDiv.className = 'chats-list';
+        
+        if (chatsList.length === 0) {
+            chatsDiv.innerHTML = '<div class="empty-chats">Нет чатов. Создайте первый!</div>';
+        } else {
+            for (const chat of chatsList) {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item';
+                chatItem.innerHTML = `
+                    <div class="chat-avatar" style="background: ${chat.avatar_color || '#4a6fa5'}">${escapeHtml(chat.avatar_symbol || '💬')}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">${escapeHtml(chat.name || (chat.type === 'private' ? 'Личный чат' : 'Без названия'))}</div>
+                        <div class="chat-last-msg">${chat.type === 'channel' ? '📢 Канал' : chat.type === 'group' ? '👥 Группа' : '🔒 Приват'}</div>
+                    </div>
+                `;
+                chatItem.onclick = () => openChat(chat);
+                chatsDiv.appendChild(chatItem);
+            }
+        }
+        container.appendChild(chatsDiv);
+        messengerSection.innerHTML = '';
+        messengerSection.appendChild(container);
+    }
+    
+    async function createNewChat() {
+        const type = prompt('Тип чата: private, group, channel');
+        if (!type || !['private', 'group', 'channel'].includes(type)) return;
+        
+        let name = null;
+        if (type !== 'private') name = prompt('Название чата:');
+        if (type !== 'private' && !name) return;
+        
+        const { data: chat, error } = await supabase.from('chats').insert({
+            type: type,
+            name: name,
+            created_by: currentUser.id,
+            avatar_symbol: type === 'channel' ? '📢' : type === 'group' ? '👥' : '💬'
+        }).select().single();
+        
+        if (error) { alert('Ошибка: ' + error.message); return; }
+        
+        // Добавляем создателя как участника
+        await supabase.from('chat_members').insert({ chat_id: chat.id, user_id: currentUser.id, role: 'admin' });
+        
+        // Для приватного чата запрашиваем второго пользователя
+        if (type === 'private') {
+            const otherUserEmail = prompt('Email пользователя для приватного чата:');
+            if (otherUserEmail) {
+                const { data: users } = await supabase.from('profiles').select('id').eq('email', otherUserEmail);
+                if (users && users[0]) {
+                    await supabase.from('chat_members').insert({ chat_id: chat.id, user_id: users[0].id, role: 'member' });
+                }
+            }
+        }
+        
+        loadChats();
+    }
+    
+    async function openChat(chat) {
+        currentChat = chat;
+        messengerSection.innerHTML = `
+            <div class="chat-header">
+                <button class="back-btn" id="backToChats">←</button>
+                <div class="chat-avatar" style="background: ${chat.avatar_color || '#4a6fa5'}">${escapeHtml(chat.avatar_symbol || '💬')}</div>
+                <div><strong>${escapeHtml(chat.name || (chat.type === 'private' ? 'Личный чат' : 'Чат'))}</strong><br><small>${chat.type === 'channel' ? 'Канал' : chat.type === 'group' ? 'Группа' : 'Приват'}</small></div>
             </div>
-            <div class="auth-form">
-                <input type="email" class="auth-input" placeholder="Email">
-                <input type="password" class="auth-input" placeholder="Пароль (мин. 6 символов)">
-                <button class="auth-btn">Войти</button>
-                <div class="error-msg"></div>
+            <div class="messages-container" id="messagesContainer"></div>
+            <div class="message-input-area">
+                <input type="text" class="message-input" placeholder="Сообщение..." id="messageInput">
+                <button class="send-message-btn" id="sendMsgBtn">📤</button>
             </div>
         `;
         
-        const loginTab = container.querySelector('.auth-tab');
-        const regTab = container.querySelectorAll('.auth-tab')[1];
-        const emailInput = container.querySelector('.auth-input');
-        const passInput = container.querySelectorAll('.auth-input')[1];
-        const submitBtn = container.querySelector('.auth-btn');
-        const errorMsg = container.querySelector('.error-msg');
+        document.getElementById('backToChats').onclick = () => {
+            if (messagesSubscription) messagesSubscription.unsubscribe();
+            currentChat = null;
+            loadChats();
+        };
         
+        // Загружаем сообщения
+        await loadMessages(chat.id);
+        
+        // Подписка на новые сообщения
+        if (messagesSubscription) messagesSubscription.unsubscribe();
+        messagesSubscription = supabase
+            .channel(`chat-${chat.id}`)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chat.id}` }, payload => {
+                addMessageToChat(payload.new);
+            })
+            .subscribe();
+        
+        document.getElementById('sendMsgBtn').onclick = () => sendMessage(chat.id);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(chat.id); });
+    }
+    
+    async function loadMessages(chatId) {
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: true });
+        
+        if (error) return;
+        
+        const container = document.getElementById('messagesContainer');
+        container.innerHTML = '';
+        for (const msg of data || []) {
+            addMessageToChat(msg);
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function addMessageToChat(message) {
+        const container = document.getElementById('messagesContainer');
+        if (!container) return;
+        
+        const msgDiv = document.createElement('div');
+        const isOwn = message.user_id === currentUser.id;
+        msgDiv.className = `message ${isOwn ? 'message-own' : 'message-other'}`;
+        
+        if (!isOwn) {
+            const senderSpan = document.createElement('div');
+            senderSpan.className = 'message-sender';
+            senderSpan.innerText = message.user_name || 'User';
+            msgDiv.appendChild(senderSpan);
+        }
+        
+        const textSpan = document.createElement('div');
+        textSpan.innerText = message.content;
+        msgDiv.appendChild(textSpan);
+        
+        const timeSpan = document.createElement('div');
+        timeSpan.className = 'message-time';
+        timeSpan.innerText = formatTime(new Date(message.created_at).getTime());
+        msgDiv.appendChild(timeSpan);
+        
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    async function sendMessage(chatId) {
+        const input = document.getElementById('messageInput');
+        const content = input.value.trim();
+        if (!content) return;
+        
+        await supabase.from('messages').insert({
+            chat_id: chatId,
+            user_id: currentUser.id,
+            user_name: currentProfile?.name || currentUser.email?.split('@')[0],
+            content: content,
+            created_at: new Date().toISOString()
+        });
+        
+        input.value = '';
+    }
+
+    // ========== АВТОРИЗАЦИЯ ==========
+    function renderAuth() {
+        authSection.classList.remove('hide');
+        feedSection.classList.add('hide');
+        messengerSection.classList.add('hide');
+        userHeaderInfo.innerHTML = '';
+        authSection.innerHTML = `
+            <div class="auth-container">
+                <div class="auth-tabs"><button class="auth-tab active">Вход</button><button class="auth-tab">Регистрация</button></div>
+                <div><input type="email" class="auth-input" placeholder="Email"><input type="password" class="auth-input" placeholder="Пароль"><button class="auth-btn">Войти</button><div class="error-msg"></div></div>
+            </div>
+        `;
+        const loginTab = authSection.querySelector('.auth-tab');
+        const regTab = authSection.querySelectorAll('.auth-tab')[1];
+        const emailInput = authSection.querySelector('.auth-input');
+        const passInput = authSection.querySelectorAll('.auth-input')[1];
+        const submitBtn = authSection.querySelector('.auth-btn');
+        const errorMsg = authSection.querySelector('.error-msg');
         let activeTab = 'login';
         
-        loginTab.onclick = () => {
-            loginTab.classList.add('active');
-            regTab.classList.remove('active');
-            submitBtn.innerText = 'Войти';
-            activeTab = 'login';
-            errorMsg.innerText = '';
-            errorMsg.style.color = '#c2412c';
-        };
-        
-        regTab.onclick = () => {
-            regTab.classList.add('active');
-            loginTab.classList.remove('active');
-            submitBtn.innerText = 'Зарегистрироваться';
-            activeTab = 'register';
-            errorMsg.innerText = '';
-            errorMsg.style.color = '#c2412c';
-        };
+        loginTab.onclick = () => { loginTab.classList.add('active'); regTab.classList.remove('active'); submitBtn.innerText = 'Войти'; activeTab = 'login'; errorMsg.innerText = ''; };
+        regTab.onclick = () => { regTab.classList.add('active'); loginTab.classList.remove('active'); submitBtn.innerText = 'Зарегистрироваться'; activeTab = 'register'; errorMsg.innerText = ''; };
         
         submitBtn.onclick = async () => {
             const email = emailInput.value.trim();
             const password = passInput.value;
-            if (!email || !password) {
-                errorMsg.innerText = 'Заполните все поля';
-                return;
-            }
-            if (activeTab === 'register' && password.length < 6) {
-                errorMsg.innerText = 'Пароль должен быть не менее 6 символов';
-                return;
-            }
+            if (!email || !password) { errorMsg.innerText = 'Заполните поля'; return; }
             try {
                 if (activeTab === 'register') {
                     const { error } = await supabase.auth.signUp({ email, password });
                     if (error) throw error;
-                    errorMsg.style.color = '#06a06b';
-                    errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
-                    emailInput.value = '';
-                    passInput.value = '';
-                    loginTab.click();
+                    errorMsg.style.color = '#06a06b'; errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
+                    emailInput.value = ''; passInput.value = ''; loginTab.click();
                 } else {
                     const { error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     await checkUserAndLoad();
                 }
-            } catch (err) {
-                errorMsg.style.color = '#c2412c';
-                errorMsg.innerText = err.message || 'Ошибка авторизации';
-            }
+            } catch (err) { errorMsg.innerText = err.message; }
         };
-        
-        authSection.innerHTML = '';
-        authSection.appendChild(container);
     }
     
     async function checkUserAndLoad() {
@@ -986,28 +786,24 @@
             currentProfile = await loadProfile(user.id);
             updateHeaderInfo();
             authSection.classList.add('hide');
-            profileSection.classList.add('hide');
             feedSection.classList.remove('hide');
+            messengerSection.classList.add('hide');
             await loadInitialFeed();
+            // Устанавливаем активный таб "Лента"
+            document.querySelector('.tab-btn[data-tab="feed"]').classList.add('active');
+            document.querySelector('.tab-btn[data-tab="messenger"]').classList.remove('active');
         } else {
-            currentUser = null;
             renderAuth();
         }
     }
     
     supabase.auth.onAuthStateChange(async (event) => {
-        if (event === 'SIGNED_IN') {
-            await checkUserAndLoad();
-        } else if (event === 'SIGNED_OUT') {
-            currentUser = null;
-            renderAuth();
-        }
+        if (event === 'SIGNED_IN') await checkUserAndLoad();
+        else if (event === 'SIGNED_OUT') { currentUser = null; renderAuth(); }
     });
     
-    // Запуск приложения
-    testSupabaseConnection();
     checkUserAndLoad();
 </script>
-<footer class="container">RuEncryp · защищённая соцсеть</footer>
+<footer class="container">RuEncryp · Лента + Мессенджер (личные чаты, группы, каналы)</footer>
 </body>
 </html>
