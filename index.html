@@ -2,680 +2,968 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Atom Cases — кейсы с подарками</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 12px; }
-        .wallet, .main-container { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 32px; width: 100%; max-width: 560px; padding: 24px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .logo { background: #ed5d19; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; color: #000; }
-        .title { font-size: 26px; font-weight: 600; color: #fff; }
-        .badge { background: #141414; border: 1px solid #2a2a2a; color: #ed5d19; font-size: 12px; padding: 5px 12px; border-radius: 30px; display: inline-block; margin-bottom: 20px; }
-        .section-title { color: #666; font-size: 13px; font-weight: 600; text-transform: uppercase; margin: 24px 0 12px 0; }
-        .field { margin-bottom: 16px; }
-        .field label { display: block; color: #aaa; font-size: 14px; margin-bottom: 6px; }
-        .field input, select { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 24px; padding: 14px 18px; font-size: 16px; color: #fff; outline: none; }
-        .field input:focus { border-color: #ed5d19; }
-        .username-field { position: relative; }
-        .username-field input { padding-left: 32px; }
-        .username-field::before { content: '@'; position: absolute; left: 18px; top: 42px; color: #888; font-size: 16px; pointer-events: none; }
-        .btn { background: #ed5d19; border: none; border-radius: 28px; padding: 16px 20px; font-size: 17px; font-weight: 600; color: #000; width: 100%; cursor: pointer; margin-top: 8px; }
-        .btn:active { transform: scale(0.99); }
-        .btn-secondary { background: #1a1a1a; color: #fff; }
-        .btn-danger { background: #1a0a0a; color: #ff6b6b; }
-        .btn-atom { background: #2a6f8f; color: #fff; }
-        .btn-withdraw { background: #ff9800; color: #000; }
-        .profile { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 24px; padding: 20px; margin: 16px 0 20px; }
-        .profile-row { display: flex; align-items: center; gap: 16px; }
-        .avatar { width: 64px; height: 64px; background: #ed5d19; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: #000; }
-        .info h2 { color: #fff; font-size: 20px; }
-        .info .handle { color: #ed5d19; font-size: 14px; }
-        .balance-card { background: #000; border: 1px solid #2a2a2a; border-radius: 24px; padding: 24px; margin-bottom: 20px; }
-        .balance-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
-        .balance-label { color: #888; font-size: 13px; text-transform: uppercase; }
-        .balance-amount { color: #fff; font-size: 28px; font-weight: 700; }
-        .balance-amount small { color: #ed5d19; font-size: 14px; }
-        .tabs { display: flex; gap: 6px; margin: 20px 0; }
-        .tab { flex: 1; background: #111; border: 1px solid #2a2a2a; border-radius: 30px; padding: 12px 6px; text-align: center; color: #888; font-size: 14px; cursor: pointer; }
-        .tab.active { background: #ed5d19; color: #000; font-weight: 600; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
-        .case-card { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 20px; padding: 20px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .case-card:hover { border-color: #ed5d19; transform: translateY(-2px); }
-        .case-card h3 { margin-bottom: 10px; font-size: 18px; color: #fff; }
-        .case-cost { color: #888; font-size: 13px; margin: 12px 0; }
-        .open-btn { background: #ed5d19; border: none; border-radius: 28px; padding: 12px 20px; font-weight: 600; color: #000; width: 100%; cursor: pointer; }
-        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
-        .item-card { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 18px; padding: 16px; text-align: center; }
-        .item-name { font-weight: 600; margin-bottom: 8px; color: #fff; font-size: 18px; }
-        .item-value { color: #ed5d19; font-size: 14px; margin-bottom: 10px; }
-        .item-actions button { width: 100%; background: #2a2a2a; border: none; border-radius: 20px; color: #e0e0e0; padding: 10px; font-size: 13px; cursor: pointer; margin-bottom: 8px; }
-        .sell-nft-btn { background: #4CAF50 !important; color: #fff !important; }
-        .slot-machine { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; }
-        .slot-reels { background: #1a1a1a; border-radius: 28px; padding: 28px; border: 2px solid #ed5d19; max-width: 90%; width: 420px; text-align: center; }
-        .slot-container { background: #0a0a0a; border-radius: 20px; padding: 20px; margin: 20px 0; overflow: hidden; height: 150px; }
-        .slot-reel-view { height: 110px; overflow: hidden; }
-        .slot-items { position: relative; width: 100%; }
-        .slot-item { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 52px; border-bottom: 1px solid #2a2a2a; }
-        .slot-result { margin-top: 20px; font-size: 18px; font-weight: bold; color: #ed5d19; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #1a1a1a; border-radius: 28px; padding: 28px; max-width: 360px; width: 90%; text-align: center; border: 1px solid #ed5d19; }
-        .modal-content h3 { color: #ed5d19; margin-bottom: 12px; }
-        .modal-input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #2a2a2a; border-radius: 24px; background: #111; color: #fff; }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 24px; cursor: pointer; font-weight: 600; }
-        .modal-btn.confirm { background: #4CAF50; color: #fff; }
-        .modal-btn.cancel { background: #2a2a2a; color: #fff; }
-        .close-modal { background: #2a2a2a; border: none; border-radius: 30px; color: #fff; padding: 12px 24px; cursor: pointer; margin-top: 16px; }
-        .actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
-        .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #1a1a1a; text-align: center; font-size: 12px; color: #666; }
-        .hidden { display: none !important; }
-        .loading { text-align: center; color: #666; padding: 40px; }
-        .success { background: #122212; border: 1px solid #2a5a2a; color: #9eff9e; padding: 12px; border-radius: 20px; margin: 16px 0; }
-        @media (max-width: 480px) { .wallet, .main-container { padding: 20px 16px; } .balance-amount { font-size: 24px; } .cases-grid { grid-template-columns: 1fr; } }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>RuEncryp · соцсеть</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #f2f4f8;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 0 0 80px 0;
+            color: #1a2634;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 16px 14px;
+        }
+
+        .header {
+            background: white;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e2e6ec;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: white;
+        }
+        .header-content {
+            max-width: 550px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #1e2a3e;
+        }
+        .header-sub {
+            font-size: 0.75rem;
+            color: #5b6e8c;
+            margin-top: 4px;
+        }
+        .logout-btn, .profile-btn {
+            background: none;
+            border: 1px solid #d0d8e8;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: #4a5b6e;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .profile-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 18px;
+            border: 1px solid #e7ecf3;
+            transition: all 0.2s ease;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: #4a6fa5;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e2a3e;
+        }
+        .user-bio {
+            font-size: 0.7rem;
+            color: #6c7a91;
+            margin-top: 2px;
+        }
+        .post-time {
+            font-size: 0.7rem;
+            color: #7e8b9e;
+            margin-top: 2px;
+        }
+        .post-text {
+            font-size: 0.95rem;
+            line-height: 1.45;
+            margin: 12px 0;
+            word-break: break-word;
+            color: #2c3e44;
+        }
+        .post-actions {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+            border-top: 1px solid #edf2f8;
+            padding-top: 12px;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #4a5b6e;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 40px;
+            transition: 0.1s;
+        }
+        .action-btn:active {
+            background: #eef2f7;
+            transform: scale(0.96);
+        }
+        .like-btn.liked {
+            color: #c2412c;
+        }
+        .like-icon, .comment-icon {
+            font-size: 1.35rem;
+        }
+        .comments-section {
+            margin-top: 14px;
+            background: #f9fbfd;
+            border-radius: 18px;
+            padding: 12px;
+            border: 1px solid #eef2f8;
+        }
+        .comment-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e6edf4;
+            font-size: 0.85rem;
+            display: flex;
+            gap: 10px;
+        }
+        .comment-name {
+            font-weight: 600;
+            min-width: 64px;
+            color: #2c3e50;
+        }
+        .comment-text {
+            color: #1e2a36;
+            word-break: break-word;
+            flex: 1;
+        }
+        .add-comment {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            align-items: center;
+        }
+        .comment-input {
+            flex: 1;
+            background: white;
+            border: 1px solid #dce3ec;
+            border-radius: 40px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+        .comment-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .send-comment {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        .new-post-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .new-post-text {
+            width: 100%;
+            border: 1px solid #dce3ec;
+            border-radius: 28px;
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .new-post-text:focus {
+            border-color: #3b82f6;
+            outline: none;
+        }
+        .publish-btn {
+            margin-top: 12px;
+            background: #3b82f6;
+            border: none;
+            padding: 12px;
+            border-radius: 44px;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .auth-container, .profile-container {
+            background: white;
+            border-radius: 28px;
+            padding: 24px 20px;
+            margin-top: 20px;
+            border: 1px solid #eef2f8;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7e8b9e;
+            cursor: pointer;
+        }
+        .auth-tab.active {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .auth-input, .profile-input, .profile-textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #dce3ec;
+            border-radius: 28px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+        .profile-textarea {
+            border-radius: 20px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .auth-btn, .profile-save-btn {
+            width: 100%;
+            background: #3b82f6;
+            border: none;
+            padding: 14px;
+            border-radius: 44px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .error-msg {
+            color: #c2412c;
+            font-size: 0.8rem;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5b6e8c;
+        }
+        .hide {
+            display: none;
+        }
+        .empty-feed {
+            text-align: center;
+            padding: 48px 20px;
+            background: white;
+            border-radius: 32px;
+            color: #6c7a91;
+            border: 1px solid #eef2f8;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #8d9bb0;
+            margin-top: 20px;
+            padding-bottom: 12px;
+        }
+        .avatar-preview {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .color-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.selected {
+            border-color: #1e2a3e;
+            transform: scale(1.1);
+        }
+        .avatar-emoji-input {
+            text-align: center;
+            font-size: 1.5rem;
+            width: 80px;
+            margin: 0 auto 16px;
+            padding: 8px;
+            border: 1px solid #dce3ec;
+            border-radius: 40px;
+            text-align: center;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .user-header-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
 </head>
 <body>
-
-<div id="loginForm" class="wallet">
-    <div class="header"><div class="logo">⚔️</div><div class="title">Atom Cases</div></div>
-    <div class="badge">кейсы с подарками AtomGlide</div>
-    <div class="section-title">вход через AtomGlide</div>
-    <div class="field username-field">
-        <label>никнейм</label>
-        <input type="text" id="loginUsername" placeholder="username">
+<div class="header">
+    <div class="header-content">
+        <div>
+            <h1>RuEncryp</h1>
+            <div class="header-sub">защищённая лента</div>
+        </div>
+        <div id="userHeaderInfo" class="user-header-info"></div>
     </div>
-    <div class="field">
-        <label>пароль</label>
-        <input type="password" id="loginPassword" placeholder="••••••••">
-    </div>
-    <button class="btn" id="loginBtn">войти в AtomGlide</button>
-    <div class="footer"><span>API: atomglidedev.ru</span><span>⭐ ATM</span></div>
 </div>
 
-<div id="mainInterface" class="main-container hidden">
-    <div class="header"><div class="logo">🎁</div><div class="title">Atom Cases</div></div>
-    <div class="profile"><div class="profile-row"><div class="avatar" id="avatar">👤</div><div class="info"><h2 id="fullName">Игрок</h2><div class="handle" id="userHandle">@player</div></div></div></div>
-    <div class="balance-card">
-        <div class="balance-row"><span class="balance-label">💰 Баланс ATM</span><span class="balance-amount" id="atmBalance">0 <small>ATM</small></span></div>
-        <div class="balance-row"><button class="btn-withdraw" id="withdrawAtmBtn" style="background:#ff9800; color:#000; padding:10px; margin-top:10px;">💸 Вывести ATM</button></div>
-    </div>
-
-    <div class="tabs">
-        <div class="tab active" data-tab="cases">🎁 кейсы</div>
-        <div class="tab" data-tab="inventory">📦 NFT подарки</div>
-        <div class="tab" data-tab="deposit">💳 пополнить</div>
-        <div class="tab" data-tab="withdrawals">📜 история выводов</div>
-    </div>
-
-    <div id="casesTab" class="tab-content active"><div class="section-title">доступные кейсы</div><div id="casesGrid" class="cases-grid"><div class="loading">загрузка...</div></div></div>
-    <div id="inventoryTab" class="tab-content"><div class="section-title">ваши NFT подарки</div><div id="inventoryGrid" class="inventory-grid"><div class="loading">загрузка...</div></div></div>
-    <div id="depositTab" class="tab-content">
-        <div class="section-title">пополнить баланс</div>
-        <div class="balance-card" style="margin-bottom:16px"><div class="balance-row"><span class="balance-label">💰 Ваш баланс ATM</span><span class="balance-amount" id="atmBalance2">0 <small>ATM</small></span></div></div>
-        <div class="field"><label>сумма пополнения (в ATM)</label><input type="number" id="depositAmount" placeholder="100" min="1"></div>
-        <button class="btn btn-atom" id="depositBtn">💸 пополнить ATM</button>
-        <div id="depositMessage"></div>
-        <div class="footer" style="margin-top:16px">⚡ Перевод на @atomcases</div>
-    </div>
-    <div id="withdrawalsTab" class="tab-content">
-        <div class="section-title">история выводов</div>
-        <div id="withdrawalsList" class="inventory-grid"><div class="loading">загрузка...</div></div>
-    </div>
-
-    <div class="actions"><button class="btn btn-danger" id="logoutBtn">выйти</button></div>
-    <div class="footer">Atom Cases · открывай кейсы с NFT подарками</div>
+<div class="container" id="appContainer">
+    <div id="authSection"></div>
+    <div id="profileSection" class="hide"></div>
+    <div id="feedSection" class="hide"></div>
 </div>
-
-<div id="slotMachine" class="slot-machine"><div class="slot-reels"><h3>🎰 открытие кейса 🎰</h3><div class="slot-container"><div class="slot-reel-view"><div class="slot-items" id="slotItems"></div></div></div><div class="slot-result" id="slotResult"></div><button class="close-modal" id="closeSlotBtn">закрыть</button></div></div>
-<div id="modal" class="modal"><div class="modal-content"><h3 id="modalTitle"></h3><p id="modalMessage"></p><button class="close-modal" id="closeModalBtn">ок</button></div></div>
-<div id="withdrawAtmModal" class="modal"><div class="modal-content"><h3>💸 Вывод ATM</h3><p>Введите сумму для вывода на свой аккаунт <strong id="currentUsernameDisplay"></strong></p><p style="font-size:12px; color:#ed5d19; margin-top:5px;">⚠️ Минимальная сумма вывода: 15 ATM</p><input type="number" id="withdrawAmount" class="modal-input" placeholder="Сумма в ATM" min="15"><div class="modal-buttons"><button class="modal-btn confirm" id="confirmWithdrawBtn">Вывести</button><button class="modal-btn cancel" id="cancelWithdrawBtn">Отмена</button></div></div></div>
 
 <script>
-(function(){
-    const API_BASE = 'https://atomglidedev.ru';
-    const DEPOSIT_RECIPIENT = '@atomcases';
-    const MIN_WITHDRAW_AMOUNT = 15;
+    const SUPABASE_URL = 'https://bievejrvmctfbkpqiojr.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_A_Q9j73bh46RIPO5tG9Hng_wiBZ8V00';
     
-    const SUPABASE_URL = 'https://pmybrbmkanzbsmghhein.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_JYy-UIU1s8gH1EfSv2Bqew_oM5MIKuP';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    let currentUser = null, token = null, balance = 0, inventory = [], lastFree = null, slotTimeout = null;
-    let supabaseUserId = null;
-    let bankAccount = null;
-    
-    function parseJwt(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}
-    function escapeHtml(s){if(!s)return '';return s.replace(/[&<>]/g,function(m){return m==='&'?'&amp;':m==='<'?'&lt;':m==='>'?'&gt;':m;});}
-    
-    async function apiLogin(u,p){
-        let r=await fetch(`${API_BASE}/auth/login`,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({username:u,password:p})
-        });
-        if(!r.ok)throw new Error('Login failed');
-        let d=await r.json();
-        return d.token||d.access_token;
+    let supabaseClient;
+    if (!window._supabaseClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window._supabaseClient = supabaseClient;
+    } else {
+        supabaseClient = window._supabaseClient;
     }
     
-    async function apiGetUser(id,t){
-        let r=await fetch(`${API_BASE}/users/${id}`,{headers:{'Authorization':`Bearer ${t}`}});
-        if(!r.ok)throw new Error();
-        return await r.json();
-    }
+    let currentUser = null;
+    let currentProfile = null;
+    let allPosts = [];
+    let userLikesSet = new Set();
+    let commentsMap = new Map();
+
+    const authSection = document.getElementById('authSection');
+    const profileSection = document.getElementById('profileSection');
+    const feedSection = document.getElementById('feedSection');
+    const userHeaderInfo = document.getElementById('userHeaderInfo');
+
+    // Цвета для аватара
+    const avatarColors = ['#4a6fa5', '#e94560', '#48cae4', '#06d6a0', '#ffb703', '#8338ec', '#fb5607', '#3a86ff'];
     
-    async function apiGetBalance(id,t){
-        let u=await apiGetUser(id,t);
-        return parseFloat(u.balance)||0;
+    function formatTime(timestamp) {
+        const diff = Date.now() - timestamp;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        if (minutes < 1) return "только что";
+        if (minutes < 60) return `${minutes} мин назад`;
+        if (hours < 24) return `${hours} ч назад`;
+        if (days === 1) return "вчера";
+        return `${days} дн назад`;
     }
-    
-    async function apiTransfer(fromToken, toUsername, amount, comment){
-        let r=await fetch(`${API_BASE}/auth/transfer`,{
-            method:'POST',
-            headers:{'Content-Type':'application/json','Authorization':`Bearer ${fromToken}`},
-            body:JSON.stringify({username:toUsername,amount:amount,description:comment})
-        });
-        if(!r.ok)throw new Error('Transfer failed: '+(await r.text()));
-        return await r.json();
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
-    
-    async function apiGetUserNFTs(userId, userToken){
-        try{
-            let r=await fetch(`${API_BASE}/${userId}/purchases`,{
-                method:'GET',
-                headers:{'Authorization':`Bearer ${userToken}`,'Accept':'application/json'}
-            });
-            if(!r.ok) throw new Error(`HTTP ${r.status}`);
-            let data=await r.json();
-            if(Array.isArray(data)) return data;
-            if(data.purchases && Array.isArray(data.purchases)) return data.purchases;
-            return [];
-        }catch(e){
-            console.error('Get NFTs error:',e);
-            return [];
-        }
-    }
-    
-    async function apiTransferNFT(fromToken, nftId, buyerUsername){
-        let r=await fetch(`${API_BASE}/transfer`,{
-            method:'POST',
-            headers:{'Content-Type':'application/json','Authorization':`Bearer ${fromToken}`},
-            body:JSON.stringify({nftId:nftId,buyerUsername:buyerUsername})
-        });
-        if(!r.ok){
-            let err=await r.text();
-            throw new Error(`Transfer failed: ${err}`);
-        }
-        return await r.json();
-    }
-    
-    async function loadBankAccount(){
-        let {data,error}=await supabase.from('bank').select('*').limit(1).maybeSingle();
-        if(data && !error){ bankAccount=data; }
-        else { console.error('Bank account not found'); }
-    }
-    
-    async function getBankTokenAndId(){
-        if(!bankAccount) return null;
-        try{
-            let token=await apiLogin(bankAccount.username, bankAccount.password);
-            let payload=parseJwt(token);
-            return {token:token, userId:payload._id};
-        }catch(e){
-            console.error('Bank login failed:',e);
+
+    // Загрузка профиля пользователя
+    async function loadProfile(userId) {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+        
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error loading profile:', error);
             return null;
         }
-    }
-    
-    async function getOrCreateUserInSupabase(atomglideId, username, fullName){
-        let {data:existing}=await supabase.from('users').select('*').eq('atomglide_id',atomglideId).maybeSingle();
-        if(existing) return existing;
-        let {data:newUser,error}=await supabase.from('users').insert({
-            atomglide_id:atomglideId, username:username, full_name:fullName, balance_atm:0, last_free_case_date:null
-        }).select().single();
-        if(error) throw error;
-        return newUser;
-    }
-    
-    async function loadFromSupabase(userId){
-        let {data:user,error}=await supabase.from('users').select('*').eq('id',userId).single();
-        if(error) throw error;
-        let {data:items}=await supabase.from('inventory').select('*').eq('user_id',userId).order('received_at',{ascending:false});
-        if(items) inventory=items.map(i=>({id:i.id, name:i.gift_name, value:i.gift_value, receivedAt:i.received_at}));
-        return user;
-    }
-    
-    async function saveToSupabase(){
-        if(!supabaseUserId) return;
-        await supabase.from('users').update({balance_atm:balance, last_free_case_date:lastFree}).eq('id',supabaseUserId);
-        let {data:existingItems}=await supabase.from('inventory').select('id,gift_name').eq('user_id',supabaseUserId);
-        if(existingItems){
-            for(let dbItem of existingItems){
-                let stillExists=inventory.some(i=>i.id===dbItem.id);
-                if(!stillExists) await supabase.from('inventory').delete().eq('id',dbItem.id);
-            }
-        }
-        for(let item of inventory){
-            if(!item.id || item.id.toString().startsWith('temp_')){
-                await supabase.from('inventory').insert({user_id:supabaseUserId, gift_name:item.name, gift_value:item.value, received_at:item.receivedAt || new Date().toISOString()});
-            }
-        }
-    }
-    
-    async function recordCaseOpening(caseId, reward, spentAtm){
-        await supabase.from('case_openings').insert({
-            user_id:supabaseUserId, case_id:caseId, reward_type:reward.reward_type,
-            reward_name:reward.reward_name||null, reward_value:reward.reward_value||null,
-            spent_atm:spentAtm, created_at:new Date().toISOString()
-        });
-    }
-    
-    async function recordWithdrawal(withdrawType, amount, itemName, recipient){
-        await supabase.from('withdrawals').insert({
-            user_id:supabaseUserId,
-            username:currentUser.username,
-            withdraw_type:withdrawType,
-            amount:amount || null,
-            item_name:itemName || null,
-            recipient:recipient,
-            status:'completed',
-            created_at:new Date().toISOString()
-        });
-    }
-    
-    async function loadWithdrawals(){
-        let {data:withdrawals,error}=await supabase
-            .from('withdrawals')
-            .select('*')
-            .eq('user_id',supabaseUserId)
-            .order('created_at',{ascending:false});
         
-        let container=document.getElementById('withdrawalsList');
-        if(error || !withdrawals || withdrawals.length===0){
-            container.innerHTML='<div class="loading">История выводов пуста</div>';
-            return;
+        if (data) {
+            return data;
         }
         
-        container.innerHTML=withdrawals.map(w=>{
-            let typeIcon=w.withdraw_type==='atm'?'💰':'🎁';
-            let amountText=w.withdraw_type==='atm'?`${w.amount} ATM`:`${w.item_name}`;
-            let date=new Date(w.created_at).toLocaleString();
-            return `
-                <div class="item-card">
-                    <div class="item-name">${typeIcon} ${w.withdraw_type.toUpperCase()}</div>
-                    <div class="item-value">${amountText}</div>
-                    <div style="font-size:11px; color:#666;">→ ${w.recipient}</div>
-                    <div style="font-size:10px; color:#444; margin-top:5px;">${date}</div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    async function login(){
-        let u=document.getElementById('loginUsername').value.trim();
-        let p=document.getElementById('loginPassword').value;
-        if(!u||!p){alert('Заполните поля');return;}
-        if(!u.startsWith('@'))u='@'+u;
-        try{
-            token=await apiLogin(u,p);
-            let payload=parseJwt(token);
-            let userData=await apiGetUser(payload._id,token);
-            await loadBankAccount();
-            let supabaseUser=await getOrCreateUserInSupabase(payload._id, u, userData.fullName || u.replace('@',''));
-            supabaseUserId=supabaseUser.id;
-            let supabaseData=await loadFromSupabase(supabaseUserId);
-            balance=supabaseData.balance_atm||0;
-            lastFree=supabaseData.last_free_case_date||null;
-            currentUser={_id:payload._id, username:u, fullName:userData.fullName||u.replace('@',''), atmBalance:parseFloat(userData.balance)||0};
-            document.getElementById('fullName').innerText=currentUser.fullName;
-            document.getElementById('userHandle').innerText=currentUser.username;
-            document.getElementById('avatar').innerText=currentUser.fullName.charAt(0).toUpperCase();
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('mainInterface').classList.remove('hidden');
-            await refresh();
-        }catch(e){alert('Ошибка входа: '+e.message);}
-    }
-    
-    function logout(){
-        currentUser=null; token=null; balance=0; inventory=[]; supabaseUserId=null;
-        document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('mainInterface').classList.add('hidden');
-    }
-    
-    async function withdrawATM(){
-        let amount=parseInt(document.getElementById('withdrawAmount').value);
+        // Создаём профиль, если его нет
+        const newProfile = {
+            id: userId,
+            name: currentUser.email?.split('@')[0] || 'Пользователь',
+            avatar_color: '#4a6fa5',
+            avatar_symbol: '👤',
+            bio: ''
+        };
         
-        if(!amount || amount <= 0){
-            alert('Введите сумму');
-            return;
-        }
-        if(amount < MIN_WITHDRAW_AMOUNT){
-            alert(`❌ Минимальная сумма вывода: ${MIN_WITHDRAW_AMOUNT} ATM`);
-            return;
-        }
-        if(amount > balance){
-            alert(`❌ Недостаточно ATM. Доступно: ${balance} ATM`);
-            return;
-        }
-        if(!bankAccount){
-            alert('❌ Банковский аккаунт не настроен');
-            return;
+        const { data: created, error: insertError } = await supabaseClient
+            .from('profiles')
+            .insert(newProfile)
+            .select()
+            .single();
+        
+        if (insertError) {
+            console.error('Error creating profile:', insertError);
+            return newProfile;
         }
         
-        try{
-            let bankData=await getBankTokenAndId();
-            if(!bankData){
-                alert('❌ Не удалось авторизовать банковский аккаунт');
-                return;
-            }
+        return created;
+    }
+
+    // Обновление профиля
+    async function updateProfile(updates) {
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update(updates)
+            .eq('id', currentUser.id);
+        
+        if (error) throw error;
+        
+        currentProfile = { ...currentProfile, ...updates };
+        updateHeaderInfo();
+        updateAllPostsAuthorInfo();
+        return true;
+    }
+
+    // Обновление имени автора во всех постах
+    function updateAllPostsAuthorInfo() {
+        document.querySelectorAll('.post-card').forEach(card => {
+            const userNameSpan = card.querySelector('.user-name');
+            const avatarDiv = card.querySelector('.avatar');
+            const userBioSpan = card.querySelector('.user-bio');
             
-            let comment=`Вывод средств от пользователя ${currentUser.username} на сумму ${amount} ATM`;
-            await apiTransfer(bankData.token, currentUser.username, amount, comment);
-            
-            balance-=amount;
-            await saveToSupabase();
-            await recordWithdrawal('atm', amount, null, currentUser.username);
-            await refresh();
-            
-            alert(`✅ Успешно выведено ${amount} ATM на ваш аккаунт ${currentUser.username}`);
-            document.getElementById('withdrawAmount').value='';
-            document.getElementById('withdrawAtmModal').style.display='none';
-        }catch(e){ 
-            alert('Ошибка вывода: '+e.message); 
-        }
-    }
-    
-    async function deposit(){
-        let amt=parseInt(document.getElementById('depositAmount').value);
-        if(!amt||amt<=0){alert('Введите сумму');return;}
-        let userBalance=await apiGetBalance(currentUser._id,token);
-        if(userBalance<amt){alert(`❌ Недостаточно ATM. Доступно: ${userBalance} ATM`);return;}
-        let comment=`Пополнение баланса в Atom Cases на сумму ${amt} ATM`;
-        try{
-            await apiTransfer(token, DEPOSIT_RECIPIENT, amt, comment);
-            balance+=amt;
-            await saveToSupabase();
-            await refresh();
-            document.getElementById('depositAmount').value='';
-            document.getElementById('depositMessage').innerHTML='<div class="success">✅ Баланс пополнен!</div>';
-            setTimeout(()=>document.getElementById('depositMessage').innerHTML='',3000);
-        }catch(e){ alert('❌ Ошибка перевода: '+e.message); }
-    }
-    
-    async function withdrawNFT(nftName){
-        if(!bankAccount){ alert('❌ Банковский аккаунт не настроен'); return false; }
-        
-        let itemIndex=inventory.findIndex(i=>i.name===nftName);
-        if(itemIndex===-1){ alert('❌ NFT не найден в инвентаре'); return false; }
-        
-        try{
-            let bankData=await getBankTokenAndId();
-            if(!bankData){ alert('❌ Не удалось авторизовать банковский аккаунт'); return false; }
-            
-            let bankNFTs=await apiGetUserNFTs(bankData.userId, bankData.token);
-            
-            let targetNFT=null, nftId=null;
-            for(let nft of bankNFTs){
-                let nftTitle=nft.name||nft.title||nft.item_name;
-                if(nftTitle===nftName){
-                    targetNFT=nft;
-                    nftId=nft._id||nft.id;
-                    break;
+            if (card.dataset.authorId === currentUser.id) {
+                if (userNameSpan) userNameSpan.innerText = currentProfile.name;
+                if (avatarDiv) {
+                    avatarDiv.innerText = currentProfile.avatar_symbol || currentProfile.name.charAt(0).toUpperCase();
+                    avatarDiv.style.background = currentProfile.avatar_color || '#4a6fa5';
+                }
+                if (userBioSpan && currentProfile.bio) {
+                    userBioSpan.innerText = currentProfile.bio;
                 }
             }
-            
-            if(!targetNFT||!nftId){
-                alert(`❌ NFT "${nftName}" не найден в банковском аккаунте`);
-                return false;
-            }
-            
-            await apiTransferNFT(bankData.token, nftId, currentUser.username);
-            
-            inventory.splice(itemIndex,1);
-            await saveToSupabase();
-            await recordWithdrawal('nft', null, nftName, currentUser.username);
-            await refresh();
-            
-            alert(`✅ NFT "${nftName}" успешно выведен на ваш аккаунт ${currentUser.username}`);
-            return true;
-        }catch(e){
-            console.error('Withdraw NFT error:',e);
-            alert('❌ Ошибка вывода NFT: '+e.message);
-            return false;
+        });
+    }
+
+    function updateHeaderInfo() {
+        if (currentUser && currentProfile) {
+            userHeaderInfo.innerHTML = `
+                <button id="profileBtn" class="profile-btn">👤</button>
+                <button id="logoutBtnHeader" class="logout-btn">Выйти</button>
+            `;
+            document.getElementById('profileBtn')?.addEventListener('click', showProfileEditor);
+            document.getElementById('logoutBtnHeader')?.addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                renderAuth();
+            });
         }
     }
-    
-    async function loadCases() {
-        console.log('Loading cases from Supabase...');
+
+    // Показать редактор профиля
+    function showProfileEditor() {
+        feedSection.classList.add('hide');
+        profileSection.classList.remove('hide');
+        renderProfileEditor();
+    }
+
+    function renderProfileEditor() {
+        profileSection.innerHTML = `
+            <div class="profile-container">
+                <button id="backToFeed" class="back-btn">← Назад к ленте</button>
+                <h3 style="margin-bottom: 20px;">Редактировать профиль</h3>
+                <div class="avatar-preview">
+                    <div id="avatarPreview" class="avatar-large" style="background: ${currentProfile.avatar_color || '#4a6fa5'}">
+                        ${currentProfile.avatar_symbol || currentProfile.name?.charAt(0).toUpperCase() || '👤'}
+                    </div>
+                </div>
+                <div class="color-options" id="colorOptions">
+                    ${avatarColors.map(color => `
+                        <div class="color-option ${currentProfile.avatar_color === color ? 'selected' : ''}" 
+                             style="background: ${color}" data-color="${color}"></div>
+                    `).join('')}
+                </div>
+                <input type="text" id="avatarSymbol" class="avatar-emoji-input" 
+                       placeholder="Эмодзи или буква" maxlength="2" value="${escapeHtml(currentProfile.avatar_symbol || '')}">
+                <input type="text" id="profileName" class="profile-input" 
+                       placeholder="Имя" value="${escapeHtml(currentProfile.name || '')}">
+                <textarea id="profileBio" class="profile-textarea" 
+                          placeholder="О себе" rows="3">${escapeHtml(currentProfile.bio || '')}</textarea>
+                <button id="saveProfileBtn" class="profile-save-btn">💾 Сохранить изменения</button>
+                <div id="profileError" class="error-msg"></div>
+            </div>
+        `;
         
-        let { data: dbCases, error } = await supabase
-            .from('cases')
+        // Выбор цвета
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                const color = opt.dataset.color;
+                document.getElementById('avatarPreview').style.background = color;
+            });
+        });
+        
+        // Превью символа
+        const symbolInput = document.getElementById('avatarSymbol');
+        const avatarPreview = document.getElementById('avatarPreview');
+        symbolInput.addEventListener('input', () => {
+            let val = symbolInput.value;
+            if (val.length > 2) val = val.slice(0, 2);
+            avatarPreview.innerText = val || '👤';
+        });
+        
+        // Сохранение
+        document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+            const selectedColor = document.querySelector('.color-option.selected')?.dataset.color || avatarColors[0];
+            let symbol = document.getElementById('avatarSymbol').value.trim();
+            if (!symbol) symbol = '👤';
+            const name = document.getElementById('profileName').value.trim();
+            const bio = document.getElementById('profileBio').value.trim();
+            
+            if (!name) {
+                document.getElementById('profileError').innerText = 'Имя не может быть пустым';
+                return;
+            }
+            
+            try {
+                await updateProfile({
+                    name: name,
+                    avatar_color: selectedColor,
+                    avatar_symbol: symbol,
+                    bio: bio
+                });
+                document.getElementById('profileError').innerText = '✅ Профиль обновлён!';
+                setTimeout(() => {
+                    document.getElementById('profileError').innerText = '';
+                }, 2000);
+                
+                // Обновляем ленту, если она открыта
+                if (!feedSection.classList.contains('hide')) {
+                    await refreshAllPostsData();
+                }
+            } catch (err) {
+                document.getElementById('profileError').innerText = 'Ошибка: ' + err.message;
+            }
+        });
+        
+        document.getElementById('backToFeed').addEventListener('click', async () => {
+            profileSection.classList.add('hide');
+            feedSection.classList.remove('hide');
+            await refreshAllPostsData();
+        });
+    }
+
+    async function refreshAllPostsData() {
+        await loadInitialFeed();
+    }
+
+    function updatePostInDOM(postId, updatedData) {
+        const postElement = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+        if (!postElement) return;
+        
+        if (updatedData.likes_count !== undefined) {
+            const likeCountSpan = postElement.querySelector('.like-count');
+            if (likeCountSpan) likeCountSpan.innerText = updatedData.likes_count;
+            const likeBtn = postElement.querySelector('.like-btn');
+            const likeIcon = likeBtn?.querySelector('.like-icon');
+            if (likeIcon) {
+                const isLiked = userLikesSet.has(postId);
+                likeIcon.innerText = isLiked ? '❤️' : '🤍';
+                if (isLiked) likeBtn?.classList.add('liked');
+                else likeBtn?.classList.remove('liked');
+            }
+        }
+    }
+
+    function addCommentToDOM(postId, comment) {
+        const postElement = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+        if (!postElement) return;
+        const commentsContainer = postElement.querySelector('.comments-container');
+        if (commentsContainer) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment-item';
+            commentDiv.innerHTML = `
+                <div class="comment-name">${escapeHtml(comment.user_name || comment.user_email?.split('@')[0] || 'anon')}:</div>
+                <div class="comment-text">${escapeHtml(comment.content)}</div>
+            `;
+            commentsContainer.appendChild(commentDiv);
+            const commentCountSpan = postElement.querySelector('.comment-count');
+            if (commentCountSpan) {
+                commentCountSpan.innerText = (parseInt(commentCountSpan.innerText) || 0) + 1;
+            }
+        }
+        const commentInput = postElement.querySelector('.comment-input');
+        if (commentInput) commentInput.value = '';
+    }
+
+    function addPostToDOM(post) {
+        const feedContainer = document.getElementById('dynamicFeed');
+        if (!feedContainer) return;
+        const postElement = createPostElement(post);
+        feedContainer.insertBefore(postElement, feedContainer.firstChild);
+        postElement.classList.add('post-highlight');
+        setTimeout(() => postElement.classList.remove('post-highlight'), 1000);
+    }
+
+    function createPostElement(post) {
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        card.dataset.postId = post.id;
+        card.dataset.authorId = post.user_id;
+        
+        const commentsList = commentsMap.get(post.id) || [];
+        const authorName = post.user_id === currentUser?.id && currentProfile ? currentProfile.name : (post.user_name || post.user_email?.split('@')[0] || 'Аноним');
+        const authorAvatarSymbol = (post.user_id === currentUser?.id && currentProfile?.avatar_symbol) ? currentProfile.avatar_symbol : (post.user_name?.[0] || 'U').toUpperCase();
+        const authorAvatarColor = (post.user_id === currentUser?.id && currentProfile?.avatar_color) ? currentProfile.avatar_color : '#4a6fa5';
+        const authorBio = (post.user_id === currentUser?.id && currentProfile?.bio) ? currentProfile.bio : '';
+        
+        card.innerHTML = `
+            <div class="post-header">
+                <div class="avatar" style="background: ${authorAvatarColor}">${escapeHtml(authorAvatarSymbol)}</div>
+                <div class="user-info">
+                    <div class="user-name">${escapeHtml(authorName)}</div>
+                    ${authorBio ? `<div class="user-bio">${escapeHtml(authorBio)}</div>` : ''}
+                    <div class="post-time">${formatTime(new Date(post.created_at).getTime())}</div>
+                </div>
+            </div>
+            <div class="post-text">${escapeHtml(post.content)}</div>
+            <div class="post-actions">
+                <button class="action-btn like-btn ${userLikesSet.has(post.id) ? 'liked' : ''}">
+                    <span class="like-icon">${userLikesSet.has(post.id) ? '❤️' : '🤍'}</span>
+                    <span class="like-count">${post.likes_count || 0}</span>
+                </button>
+                <button class="action-btn comment-btn">
+                    <span class="comment-icon">💬</span>
+                    <span class="comment-count">${commentsList.length}</span>
+                </button>
+                ${post.user_id === currentUser?.id ? `<button class="action-btn delete-btn" style="margin-left: auto;">🗑️</button>` : ''}
+            </div>
+            <div class="comments-section">
+                <div class="comments-container">
+                    ${commentsList.map(comm => `
+                        <div class="comment-item">
+                            <div class="comment-name">${escapeHtml(comm.user_name || comm.user_email?.split('@')[0] || 'anon')}:</div>
+                            <div class="comment-text">${escapeHtml(comm.content)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="add-comment">
+                    <input type="text" placeholder="Написать комментарий..." class="comment-input">
+                    <button class="send-comment">Отправить</button>
+                </div>
+            </div>
+        `;
+        
+        const likeBtn = card.querySelector('.like-btn');
+        likeBtn.onclick = async () => {
+            const isLiked = userLikesSet.has(post.id);
+            if (isLiked) {
+                await supabaseClient.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUser.id);
+                userLikesSet.delete(post.id);
+                post.likes_count = (post.likes_count || 1) - 1;
+            } else {
+                await supabaseClient.from('likes').insert({ post_id: post.id, user_id: currentUser.id });
+                userLikesSet.add(post.id);
+                post.likes_count = (post.likes_count || 0) + 1;
+            }
+            updatePostInDOM(post.id, { likes_count: post.likes_count });
+        };
+        
+        const sendBtn = card.querySelector('.send-comment');
+        const commentInput = card.querySelector('.comment-input');
+        sendBtn.onclick = async () => {
+            const text = commentInput.value.trim();
+            if (!text) return;
+            const { data, error } = await supabaseClient.from('comments').insert({
+                post_id: post.id,
+                user_id: currentUser.id,
+                user_email: currentUser.email,
+                user_name: currentProfile?.name || currentUser.email?.split('@')[0] || 'User',
+                content: text,
+                created_at: new Date().toISOString()
+            }).select().single();
+            if (!error && data) {
+                if (!commentsMap.has(post.id)) commentsMap.set(post.id, []);
+                commentsMap.get(post.id).push(data);
+                addCommentToDOM(post.id, data);
+            }
+        };
+        
+        const deleteBtn = card.querySelector('.delete-btn');
+        if (deleteBtn) {
+            deleteBtn.onclick = async () => {
+                if (confirm('Удалить пост?')) {
+                    await supabaseClient.from('posts').delete().eq('id', post.id);
+                    card.remove();
+                    allPosts = allPosts.filter(p => p.id !== post.id);
+                }
+            };
+        }
+        
+        return card;
+    }
+
+    async function loadInitialFeed() {
+        if (!currentUser) return;
+        feedSection.innerHTML = '<div class="loading">📱 Загрузка ленты...</div>';
+        
+        const { data: posts, error } = await supabaseClient
+            .from('posts')
             .select('*')
-            .eq('is_active', true)
-            .order('id', { ascending: true });
+            .order('created_at', { ascending: false });
         
         if (error) {
-            console.error('Error loading cases:', error);
-            document.getElementById('casesGrid').innerHTML = '<div class="loading">Ошибка загрузки кейсов: ' + error.message + '</div>';
+            feedSection.innerHTML = `<div class="empty-feed">❌ Ошибка: ${error.message}</div>`;
             return;
         }
         
-        console.log('Loaded cases:', dbCases);
+        allPosts = posts || [];
         
-        if (!dbCases || dbCases.length === 0) {
-            document.getElementById('casesGrid').innerHTML = '<div class="loading">Нет доступных кейсов. Добавьте кейсы в админ-панели.</div>';
-            return;
-        }
+        const { data: userLikes } = await supabaseClient
+            .from('likes')
+            .select('post_id')
+            .eq('user_id', currentUser.id);
+        userLikesSet = new Set(userLikes?.map(l => l.post_id) || []);
         
-        let html = '';
-        for (let c of dbCases) {
-            html += `<div class="case-card" data-id="${c.id}" data-cost="${c.cost_tokens}">
-                        <h3>${c.background_icon || '📦'} ${c.case_name}</h3>
-                        <div class="case-cost">${c.cost_tokens > 0 ? `💰 ${c.cost_tokens} ATM` : '🎁 бесплатно (раз в день)'}</div>
-                        <button class="open-btn">открыть</button>
-                    </div>`;
-        }
-        document.getElementById('casesGrid').innerHTML = html;
-        
-        document.querySelectorAll('.case-card').forEach(card => {
-            card.querySelector('.open-btn').onclick = async () => {
-                let id = parseInt(card.dataset.id);
-                let cost = parseInt(card.dataset.cost);
-                await openCase(id, cost);
-            };
-        });
-    }
-    
-    async function openCase(caseId, costAtm) {
-        const isFree = (costAtm === 0);
-        
-        if (isFree) {
-            const today = new Date().toDateString();
-            if (lastFree === today) {
-                alert('Бесплатный кейс доступен раз в день');
-                return;
-            }
-        } else {
-            if (balance < costAtm) {
-                alert(`Не хватает ATM. Нужно: ${costAtm} ATM`);
-                return;
-            }
-        }
-        
-        let { data: rewards, error } = await supabase
-            .from('case_rewards')
+        const { data: allComments } = await supabaseClient
+            .from('comments')
             .select('*')
-            .eq('case_id', caseId);
+            .order('created_at', { ascending: true });
         
-        if (error || !rewards || rewards.length === 0) {
-            alert('Ошибка загрузки наград кейса');
-            return;
-        }
-        
-        const totalChance = rewards.reduce((s, r) => s + r.chance, 0);
-        let rand = Math.random() * totalChance;
-        let selected = rewards[0];
-        for (const r of rewards) {
-            if (rand <= r.chance) {
-                selected = r;
-                break;
+        commentsMap.clear();
+        if (allComments) {
+            for (const comm of allComments) {
+                if (!commentsMap.has(comm.post_id)) commentsMap.set(comm.post_id, []);
+                commentsMap.get(comm.post_id).push(comm);
             }
-            rand -= r.chance;
         }
         
-        await showSlotAnimation(selected);
-        
-        let spent = costAtm;
-        if (isFree) {
-            lastFree = new Date().toDateString();
-            spent = 0;
-        } else {
-            balance -= costAtm;
-        }
-        
-        let resultMsg = '';
-        
-        if (selected.reward_type === 'atm') {
-            balance += selected.reward_value;
-            resultMsg = `💰 +${selected.reward_value} ATM!`;
-            await saveToSupabase();
-        } else if (selected.reward_type === 'nft') {
-            inventory.unshift({
-                id: 'temp_' + Date.now() + Math.random(),
-                name: selected.reward_name,
-                value: selected.reward_value,
-                receivedAt: new Date().toISOString()
-            });
-            resultMsg = `🎁 ${selected.reward_name} добавлен в инвентарь!`;
-            await saveToSupabase();
-        }
-        
-        await recordCaseOpening(caseId, selected, spent);
-        await refresh();
-        
-        setTimeout(() => showModal('🎉 Поздравляем!', resultMsg), 2600);
+        renderFeed();
     }
     
-    async function showSlotAnimation(reward) {
-        const slot = document.getElementById('slotMachine');
-        const itemsContainer = document.getElementById('slotItems');
-        const resultDiv = document.getElementById('slotResult');
+    function renderFeed() {
+        const newPostPanel = document.createElement('div');
+        newPostPanel.className = 'new-post-panel';
+        newPostPanel.innerHTML = `
+            <textarea class="new-post-text" rows="2" placeholder="Что нового? Напиши пост..."></textarea>
+            <button class="publish-btn">📤 Опубликовать</button>
+        `;
         
-        const icons = ['🎁', '💰', '🎰', '✨', '🎲', '🏆'];
-        let finalIcon = reward.reward_type === 'atm' ? '💰' : '🎁';
-        
-        let html = '';
-        for (let i = 0; i < 30; i++) {
-            html += `<div class="slot-item">${icons[Math.floor(Math.random() * icons.length)]}</div>`;
-        }
-        html += `<div class="slot-item">${finalIcon}</div>`;
-        itemsContainer.innerHTML = html;
-        
-        slot.style.display = 'flex';
-        resultDiv.textContent = 'крутим...';
-        
-        itemsContainer.style.transition = 'none';
-        itemsContainer.style.transform = 'translateY(0)';
-        itemsContainer.offsetHeight;
-        itemsContainer.style.transition = 'transform 2.5s cubic-bezier(0.25, 0.1, 0.15, 1)';
-        itemsContainer.style.transform = `translateY(${-(30 * 111)}px)`;
-        
-        if (slotTimeout) clearTimeout(slotTimeout);
-        slotTimeout = setTimeout(() => {
-            if (reward.reward_type === 'atm') {
-                resultDiv.textContent = `🎉 +${reward.reward_value} ATM! 🎉`;
+        const textarea = newPostPanel.querySelector('.new-post-text');
+        const pubBtn = newPostPanel.querySelector('.publish-btn');
+        pubBtn.onclick = async () => {
+            const content = textarea.value.trim();
+            if (!content) return;
+            const { data, error } = await supabaseClient.from('posts').insert({
+                user_id: currentUser.id,
+                user_email: currentUser.email,
+                user_name: currentProfile?.name || currentUser.email?.split('@')[0] || 'Пользователь',
+                content: content,
+                created_at: new Date().toISOString(),
+                likes_count: 0
+            }).select().single();
+            if (!error && data) {
+                textarea.value = '';
+                allPosts.unshift(data);
+                commentsMap.set(data.id, []);
+                addPostToDOM(data);
             } else {
-                resultDiv.textContent = `🎉 ${reward.reward_name}! 🎉`;
+                alert('Ошибка: ' + error?.message);
             }
-        }, 2500);
-    }
-    
-    function closeSlot() {
-        if (slotTimeout) clearTimeout(slotTimeout);
-        document.getElementById('slotMachine').style.display = 'none';
-    }
-    
-    async function loadInventory(){
-        let grid=document.getElementById('inventoryGrid');
-        if(!inventory.length){grid.innerHTML='<div class="loading">У вас пока нет NFT подарков</div>';return;}
-        grid.innerHTML=inventory.map(i=>`<div class="item-card"><div class="item-name">${escapeHtml(i.name)}</div><div class="item-value">💰 Цена: ${i.value} ATM</div><div class="item-actions"><button class="sell-nft-btn" data-id="${i.id}" data-value="${i.value}" data-name="${escapeHtml(i.name)}">💰 Продать за ${i.value} ATM</button><button class="withdraw-nft-btn" data-name="${escapeHtml(i.name)}">🎁 Вывести NFT</button></div></div>`).join('');
+        };
         
-        document.querySelectorAll('.sell-nft-btn').forEach(btn=>{btn.onclick=async()=>{
-            let itemId=btn.dataset.id, itemValue=parseInt(btn.dataset.value), itemName=btn.dataset.name;
-            let idx=inventory.findIndex(i=>i.id==itemId);
-            if(idx===-1){alert('Предмет не найден');return;}
-            inventory.splice(idx,1);
-            balance+=itemValue;
-            await saveToSupabase();
-            await refresh();
-            alert(`✅ "${itemName}" продан за ${itemValue} ATM`);
-        };});
+        const feedContainer = document.createElement('div');
+        feedContainer.id = 'dynamicFeed';
         
-        document.querySelectorAll('.withdraw-nft-btn').forEach(btn=>{btn.onclick=async()=>{
-            let itemName=btn.dataset.name;
-            await withdrawNFT(itemName);
-        };});
-    }
-    
-    async function refresh(){
-        if(!currentUser)return;
-        try{
-            let b=await apiGetBalance(currentUser._id,token);
-            currentUser.atmBalance=b;
-        }catch(e){}
-        document.getElementById('atmBalance').innerHTML=`${balance} <small>ATM</small>`;
-        document.getElementById('atmBalance2').innerHTML=`${balance} <small>ATM</small>`;
-        await loadInventory();
-        if(document.querySelector('.tab.active')?.dataset.tab === 'withdrawals'){
-            await loadWithdrawals();
+        for (const post of allPosts) {
+            feedContainer.appendChild(createPostElement(post));
         }
-        await loadCases();
+        
+        feedSection.innerHTML = '';
+        feedSection.appendChild(newPostPanel);
+        feedSection.appendChild(feedContainer);
+    }
+
+    function renderAuth() {
+        authSection.classList.remove('hide');
+        feedSection.classList.add('hide');
+        profileSection.classList.add('hide');
+        userHeaderInfo.innerHTML = '';
+        
+        const container = document.createElement('div');
+        container.className = 'auth-container';
+        container.innerHTML = `
+            <div class="auth-tabs">
+                <button class="auth-tab active">Вход</button>
+                <button class="auth-tab">Регистрация</button>
+            </div>
+            <div class="auth-form">
+                <input type="email" class="auth-input" placeholder="Email">
+                <input type="password" class="auth-input" placeholder="Пароль (мин. 6 символов)">
+                <button class="auth-btn">Войти</button>
+                <div class="error-msg"></div>
+            </div>
+        `;
+        
+        const loginTab = container.querySelector('.auth-tab');
+        const regTab = container.querySelectorAll('.auth-tab')[1];
+        const emailInput = container.querySelector('.auth-input');
+        const passInput = container.querySelectorAll('.auth-input')[1];
+        const submitBtn = container.querySelector('.auth-btn');
+        const errorMsg = container.querySelector('.error-msg');
+        
+        let activeTab = 'login';
+        
+        loginTab.onclick = () => {
+            loginTab.classList.add('active');
+            regTab.classList.remove('active');
+            submitBtn.innerText = 'Войти';
+            activeTab = 'login';
+            errorMsg.innerText = '';
+        };
+        
+        regTab.onclick = () => {
+            regTab.classList.add('active');
+            loginTab.classList.remove('active');
+            submitBtn.innerText = 'Зарегистрироваться';
+            activeTab = 'register';
+            errorMsg.innerText = '';
+        };
+        
+        submitBtn.onclick = async () => {
+            const email = emailInput.value.trim();
+            const password = passInput.value;
+            if (!email || !password) {
+                errorMsg.innerText = 'Заполните все поля';
+                return;
+            }
+            if (activeTab === 'register' && password.length < 6) {
+                errorMsg.innerText = 'Пароль должен быть не менее 6 символов';
+                return;
+            }
+            try {
+                if (activeTab === 'register') {
+                    const { error } = await supabaseClient.auth.signUp({ email, password });
+                    if (error) throw error;
+                    errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
+                    emailInput.value = '';
+                    passInput.value = '';
+                    loginTab.click();
+                } else {
+                    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    await checkUserAndLoad();
+                }
+            } catch (err) {
+                errorMsg.innerText = err.message || 'Ошибка авторизации';
+            }
+        };
+        
+        authSection.innerHTML = '';
+        authSection.appendChild(container);
     }
     
-    function showModal(title, msg) {
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalMessage').textContent = msg;
-        document.getElementById('modal').style.display = 'flex';
+    async function checkUserAndLoad() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) {
+            currentUser = user;
+            currentProfile = await loadProfile(user.id);
+            updateHeaderInfo();
+            authSection.classList.add('hide');
+            profileSection.classList.add('hide');
+            feedSection.classList.remove('hide');
+            await loadInitialFeed();
+        } else {
+            currentUser = null;
+            renderAuth();
+        }
     }
     
-    function closeModal() {
-        document.getElementById('modal').style.display = 'none';
-    }
+    supabaseClient.auth.onAuthStateChange(async (event) => {
+        if (event === 'SIGNED_IN') {
+            await checkUserAndLoad();
+        } else if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            renderAuth();
+        }
+    });
     
-    function initTabs(){
-        document.querySelectorAll('.tab').forEach(t=>{
-            t.onclick=async()=>{
-                let n=t.dataset.tab;
-                document.querySelectorAll('.tab').forEach(tt=>tt.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-                t.classList.add('active');
-                document.getElementById(`${n}Tab`).classList.add('active');
-                if(n==='inventory') await loadInventory();
-                if(n==='withdrawals') await loadWithdrawals();
-                if(n==='cases') await loadCases();
-            };
-        });
-    }
-    
-    document.getElementById('loginBtn').onclick=login;
-    document.getElementById('logoutBtn').onclick=logout;
-    document.getElementById('depositBtn').onclick=deposit;
-    document.getElementById('withdrawAtmBtn').onclick=()=>{
-        document.getElementById('currentUsernameDisplay').innerText=currentUser.username;
-        document.getElementById('withdrawAtmModal').style.display='flex';
-    };
-    document.getElementById('confirmWithdrawBtn').onclick=withdrawATM;
-    document.getElementById('cancelWithdrawBtn').onclick=()=>document.getElementById('withdrawAtmModal').style.display='none';
-    document.getElementById('closeModalBtn').onclick=closeModal;
-    document.getElementById('closeSlotBtn').onclick=closeSlot;
-    
-    initTabs();
-    loadCases();
-})();
+    checkUserAndLoad();
 </script>
+<footer class="container">RuEncryp · защищённая соцсеть</footer>
 </body>
 </html>
