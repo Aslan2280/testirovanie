@@ -382,6 +382,15 @@
             align-items: center;
             gap: 8px;
         }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            color: #666;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -402,16 +411,12 @@
 </div>
 
 <script>
+    // ========== КОНФИГУРАЦИЯ SUPABASE ==========
     const SUPABASE_URL = 'https://bievejrvmctfbkpqiojr.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_A_Q9j73bh46RIPO5tG9Hng_wiBZ8V00';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZXZlanJ2bWN0ZmJrcHFpb2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwODc1MDIsImV4cCI6MjA5MzY2MzUwMn0.kBm8R8iwTNAaGWFviQNyJcOGkKxtzlt3LaUsu0lNBC4';
     
-    let supabaseClient;
-    if (!window._supabaseClient) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window._supabaseClient = supabaseClient;
-    } else {
-        supabaseClient = window._supabaseClient;
-    }
+    // Создаём клиент Supabase
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let currentUser = null;
     let currentProfile = null;
@@ -445,33 +450,73 @@
         return div.innerHTML;
     }
 
+    // Проверка соединения с Supabase
+    async function testSupabaseConnection() {
+        try {
+            const { data, error } = await supabase.from('posts').select('count', { count: 'exact', head: true });
+            if (error) {
+                console.error('Ошибка подключения к Supabase:', error);
+                return false;
+            }
+            console.log('Подключение к Supabase успешно!');
+            return true;
+        } catch (err) {
+            console.error('Исключение при подключении:', err);
+            return false;
+        }
+    }
+
     // Загрузка профиля
     async function loadProfile(userId) {
-        const { data, error } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-        
-        if (error) {
-            console.error('Ошибка загрузки профиля:', error);
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Ошибка загрузки профиля:', error);
+                return {
+                    id: userId,
+                    name: currentUser?.email?.split('@')[0] || 'Пользователь',
+                    avatar_color: '#4a6fa5',
+                    avatar_symbol: '👤',
+                    bio: ''
+                };
+            }
+            
+            if (data) return data;
+            
+            // Если профиля нет, возвращаем дефолтный (но не создаём)
             return {
                 id: userId,
-                name: currentUser.email?.split('@')[0] || 'Пользователь',
+                name: currentUser?.email?.split('@')[0] || 'Пользователь',
+                avatar_color: '#4a6fa5',
+                avatar_symbol: '👤',
+                bio: ''
+            };
+        } catch (err) {
+            console.error('Исключение при загрузке профиля:', err);
+            return {
+                id: userId,
+                name: currentUser?.email?.split('@')[0] || 'Пользователь',
                 avatar_color: '#4a6fa5',
                 avatar_symbol: '👤',
                 bio: ''
             };
         }
-        
-        return data;
     }
 
     // Сохранение профиля
     async function saveProfile(updates) {
-        const { error } = await supabaseClient
+        const { error } = await supabase
             .from('profiles')
-            .update(updates)
+            .upsert({ 
+                id: currentUser.id, 
+                ...updates,
+                updated_at: new Date().toISOString()
+            })
             .eq('id', currentUser.id);
         
         if (error) throw error;
@@ -492,7 +537,7 @@
             const logoutBtn = document.getElementById('logoutBtnHeader');
             if (profileBtn) profileBtn.addEventListener('click', showProfileEditor);
             if (logoutBtn) logoutBtn.addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
+                await supabase.auth.signOut();
                 currentUser = null;
                 renderAuth();
             });
@@ -551,7 +596,6 @@
             </div>
         `;
         
-        // Выбор цвета
         document.querySelectorAll('.color-option').forEach(opt => {
             opt.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
@@ -561,7 +605,6 @@
             });
         });
         
-        // Превью символа
         const symbolInput = document.getElementById('avatarSymbol');
         const avatarPreview = document.getElementById('avatarPreview');
         symbolInput.addEventListener('input', () => {
@@ -570,7 +613,6 @@
             avatarPreview.innerText = val || '👤';
         });
         
-        // Сохранение
         const saveBtn = document.getElementById('saveProfileBtn');
         const messageDiv = document.getElementById('profileMessage');
         
@@ -680,7 +722,6 @@
         let authorAvatarColor = '#4a6fa5';
         let authorBio = '';
         
-        // Если это текущий пользователь и профиль загружен — берём из профиля
         if (post.user_id === currentUser?.id && currentProfile) {
             authorName = currentProfile.name;
             authorAvatarSymbol = currentProfile.avatar_symbol || currentProfile.name?.charAt(0) || 'U';
@@ -729,11 +770,11 @@
         likeBtn.onclick = async () => {
             const isLiked = userLikesSet.has(post.id);
             if (isLiked) {
-                await supabaseClient.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUser.id);
+                await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUser.id);
                 userLikesSet.delete(post.id);
                 post.likes_count = (post.likes_count || 1) - 1;
             } else {
-                await supabaseClient.from('likes').insert({ post_id: post.id, user_id: currentUser.id });
+                await supabase.from('likes').insert({ post_id: post.id, user_id: currentUser.id });
                 userLikesSet.add(post.id);
                 post.likes_count = (post.likes_count || 0) + 1;
             }
@@ -745,7 +786,7 @@
         sendBtn.onclick = async () => {
             const text = commentInput.value.trim();
             if (!text) return;
-            const { data, error } = await supabaseClient.from('comments').insert({
+            const { data, error } = await supabase.from('comments').insert({
                 post_id: post.id,
                 user_id: currentUser.id,
                 user_email: currentUser.email,
@@ -764,7 +805,7 @@
         if (deleteBtn) {
             deleteBtn.onclick = async () => {
                 if (confirm('Удалить пост?')) {
-                    await supabaseClient.from('posts').delete().eq('id', post.id);
+                    await supabase.from('posts').delete().eq('id', post.id);
                     card.remove();
                     allPosts = allPosts.filter(p => p.id !== post.id);
                 }
@@ -778,25 +819,25 @@
         if (!currentUser) return;
         feedSection.innerHTML = '<div class="loading">📱 Загрузка ленты...</div>';
         
-        const { data: posts, error } = await supabaseClient
+        const { data: posts, error } = await supabase
             .from('posts')
             .select('*')
             .order('created_at', { ascending: false });
         
         if (error) {
-            feedSection.innerHTML = `<div class="empty-feed">❌ Ошибка: ${error.message}</div>`;
+            feedSection.innerHTML = `<div class="empty-feed">❌ Ошибка загрузки: ${error.message}<br><br>Проверьте подключение к Supabase и наличие таблиц.</div>`;
             return;
         }
         
         allPosts = posts || [];
         
-        const { data: userLikes } = await supabaseClient
+        const { data: userLikes } = await supabase
             .from('likes')
             .select('post_id')
             .eq('user_id', currentUser.id);
         userLikesSet = new Set(userLikes?.map(l => l.post_id) || []);
         
-        const { data: allComments } = await supabaseClient
+        const { data: allComments } = await supabase
             .from('comments')
             .select('*')
             .order('created_at', { ascending: true });
@@ -825,7 +866,7 @@
         pubBtn.onclick = async () => {
             const content = textarea.value.trim();
             if (!content) return;
-            const { data, error } = await supabaseClient.from('posts').insert({
+            const { data, error } = await supabase.from('posts').insert({
                 user_id: currentUser.id,
                 user_email: currentUser.email,
                 user_name: currentProfile?.name || currentUser.email?.split('@')[0] || 'Пользователь',
@@ -891,6 +932,7 @@
             submitBtn.innerText = 'Войти';
             activeTab = 'login';
             errorMsg.innerText = '';
+            errorMsg.style.color = '#c2412c';
         };
         
         regTab.onclick = () => {
@@ -899,6 +941,7 @@
             submitBtn.innerText = 'Зарегистрироваться';
             activeTab = 'register';
             errorMsg.innerText = '';
+            errorMsg.style.color = '#c2412c';
         };
         
         submitBtn.onclick = async () => {
@@ -914,7 +957,7 @@
             }
             try {
                 if (activeTab === 'register') {
-                    const { error } = await supabaseClient.auth.signUp({ email, password });
+                    const { error } = await supabase.auth.signUp({ email, password });
                     if (error) throw error;
                     errorMsg.style.color = '#06a06b';
                     errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
@@ -922,7 +965,7 @@
                     passInput.value = '';
                     loginTab.click();
                 } else {
-                    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    const { error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     await checkUserAndLoad();
                 }
@@ -937,7 +980,7 @@
     }
     
     async function checkUserAndLoad() {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
             currentUser = user;
             currentProfile = await loadProfile(user.id);
@@ -952,7 +995,7 @@
         }
     }
     
-    supabaseClient.auth.onAuthStateChange(async (event) => {
+    supabase.auth.onAuthStateChange(async (event) => {
         if (event === 'SIGNED_IN') {
             await checkUserAndLoad();
         } else if (event === 'SIGNED_OUT') {
@@ -961,6 +1004,8 @@
         }
     });
     
+    // Запуск приложения
+    testSupabaseConnection();
     checkUserAndLoad();
 </script>
 <footer class="container">RuEncryp · защищённая соцсеть</footer>
