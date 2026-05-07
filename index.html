@@ -70,7 +70,6 @@
             color: #4a5b6e;
         }
 
-        /* Табы */
         .tabs {
             display: flex;
             gap: 4px;
@@ -99,7 +98,6 @@
             color: white;
         }
 
-        /* Посты (старые стили) */
         .post-card {
             background: white;
             border-radius: 20px;
@@ -244,7 +242,6 @@
             cursor: pointer;
         }
 
-        /* Мессенджер */
         .chats-list {
             background: white;
             border-radius: 20px;
@@ -288,14 +285,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-        .chat-badge {
-            background: #3b82f6;
-            color: white;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 0.7rem;
-            font-weight: 600;
         }
         .messages-container {
             background: white;
@@ -404,6 +393,64 @@
             margin-top: 20px;
             padding-bottom: 12px;
         }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5b6e8c;
+        }
+        .auth-container {
+            background: white;
+            border-radius: 28px;
+            padding: 24px 20px;
+            margin-top: 20px;
+            border: 1px solid #eef2f8;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7e8b9e;
+            cursor: pointer;
+        }
+        .auth-tab.active {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #dce3ec;
+            border-radius: 28px;
+            font-size: 0.95rem;
+        }
+        .auth-btn {
+            width: 100%;
+            background: #3b82f6;
+            border: none;
+            padding: 14px;
+            border-radius: 44px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .error-msg {
+            color: #c2412c;
+            font-size: 0.8rem;
+            margin-top: 12px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -429,380 +476,376 @@
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://bievejrvmctfbkpqiojr.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZXZlanJ2bWN0ZmJrcHFpb2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwODc1MDIsImV4cCI6MjA5MzY2MzUwMn0.kBm8R8iwTNAaGWFviQNyJcOGkKxtzlt3LaUsu0lNBC4';
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    let currentUser = null;
-    let currentProfile = null;
-    let allPosts = [];
-    let userLikesSet = new Set();
-    let commentsMap = new Map();
-    
-    // Мессенджер
-    let currentChat = null;
-    let chatsList = [];
-    let messagesSubscription = null;
+    (function() {
+        const SUPABASE_URL = 'https://bievejrvmctfbkpqiojr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZXZlanJ2bWN0ZmJrcHFpb2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwODc1MDIsImV4cCI6MjA5MzY2MzUwMn0.kBm8R8iwTNAaGWFviQNyJcOGkKxtzlt3LaUsu0lNBC4';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let currentProfile = null;
+        let allPosts = [];
+        let userLikesSet = new Set();
+        let commentsMap = new Map();
+        
+        let currentChat = null;
+        let chatsList = [];
+        let messagesSubscription = null;
 
-    const authSection = document.getElementById('authSection');
-    const feedSection = document.getElementById('feedSection');
-    const messengerSection = document.getElementById('messengerSection');
-    const userHeaderInfo = document.getElementById('userHeaderInfo');
+        const authSection = document.getElementById('authSection');
+        const feedSection = document.getElementById('feedSection');
+        const messengerSection = document.getElementById('messengerSection');
+        const userHeaderInfo = document.getElementById('userHeaderInfo');
 
-    // Табы
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.dataset.tab;
-            if (tab === 'feed') {
+        // Табы
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                if (tab === 'feed') {
+                    feedSection.classList.remove('hide');
+                    messengerSection.classList.add('hide');
+                    loadInitialFeed();
+                } else {
+                    feedSection.classList.add('hide');
+                    messengerSection.classList.remove('hide');
+                    loadChats();
+                }
+            });
+        });
+
+        function formatTime(timestamp) {
+            const diff = Date.now() - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (minutes < 1) return "только что";
+            if (minutes < 60) return `${minutes} мин назад`;
+            if (hours < 24) return `${hours} ч назад`;
+            if (days === 1) return "вчера";
+            return `${days} дн назад`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function loadProfile(userId) {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+            if (error || !data) {
+                return { id: userId, name: currentUser?.email?.split('@')[0] || 'User', avatar_color: '#4a6fa5', avatar_symbol: '👤', bio: '' };
+            }
+            return data;
+        }
+
+        function updateHeaderInfo() {
+            if (currentUser && currentProfile) {
+                userHeaderInfo.innerHTML = `<button id="logoutBtnHeader" class="logout-btn">Выйти</button>`;
+                document.getElementById('logoutBtnHeader')?.addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    currentUser = null;
+                    renderAuth();
+                });
+            }
+        }
+
+        // ========== ЛЕНТА ==========
+        async function loadInitialFeed() {
+            if (!currentUser) return;
+            feedSection.innerHTML = '<div class="loading">📱 Загрузка...</div>';
+            const { data: posts, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+            if (error) { feedSection.innerHTML = `<div class="empty-feed">Ошибка: ${error.message}</div>`; return; }
+            allPosts = posts || [];
+            const { data: userLikes } = await supabase.from('likes').select('post_id').eq('user_id', currentUser.id);
+            userLikesSet = new Set(userLikes?.map(l => l.post_id) || []);
+            const { data: allComments } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+            commentsMap.clear();
+            if (allComments) for (const comm of allComments) {
+                if (!commentsMap.has(comm.post_id)) commentsMap.set(comm.post_id, []);
+                commentsMap.get(comm.post_id).push(comm);
+            }
+            renderFeed();
+        }
+
+        function renderFeed() {
+            const newPostPanel = document.createElement('div');
+            newPostPanel.className = 'new-post-panel';
+            newPostPanel.innerHTML = `<textarea class="new-post-text" rows="2" placeholder="Что нового?"></textarea><button class="publish-btn">📤 Опубликовать</button>`;
+            const textarea = newPostPanel.querySelector('.new-post-text');
+            const pubBtn = newPostPanel.querySelector('.publish-btn');
+            pubBtn.onclick = async () => {
+                const content = textarea.value.trim();
+                if (!content) return;
+                await supabase.from('posts').insert({ user_id: currentUser.id, user_email: currentUser.email, user_name: currentProfile?.name, content, created_at: new Date().toISOString(), likes_count: 0 });
+                textarea.value = '';
+                loadInitialFeed();
+            };
+            const feedContainer = document.createElement('div');
+            feedContainer.id = 'dynamicFeed';
+            for (const post of allPosts) {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    <div class="post-header"><div class="avatar">${escapeHtml(post.user_name?.[0] || 'U')}</div><div class="user-info"><div class="user-name">${escapeHtml(post.user_name || post.user_email?.split('@')[0])}</div><div class="post-time">${formatTime(new Date(post.created_at).getTime())}</div></div></div>
+                    <div class="post-text">${escapeHtml(post.content)}</div>
+                    <div class="post-actions"><button class="action-btn like-btn ${userLikesSet.has(post.id) ? 'liked' : ''}"><span class="like-icon">${userLikesSet.has(post.id) ? '❤️' : '🤍'}</span><span class="like-count">${post.likes_count || 0}</span></button></div>
+                `;
+                feedContainer.appendChild(card);
+            }
+            feedSection.innerHTML = '';
+            feedSection.appendChild(newPostPanel);
+            feedSection.appendChild(feedContainer);
+        }
+
+        // ========== МЕССЕНДЖЕР ==========
+        async function loadChats() {
+            if (!currentUser) return;
+            messengerSection.innerHTML = '<div class="loading">💬 Загрузка чатов...</div>';
+            
+            const { data: memberships, error } = await supabase
+                .from('chat_members')
+                .select('chat_id, chats(*)')
+                .eq('user_id', currentUser.id);
+            
+            if (error) {
+                messengerSection.innerHTML = `<div class="empty-feed">Ошибка: ${error.message}</div>`;
+                return;
+            }
+            
+            chatsList = memberships?.map(m => m.chats) || [];
+            
+            const container = document.createElement('div');
+            const newChatBtn = document.createElement('button');
+            newChatBtn.className = 'new-chat-btn';
+            newChatBtn.innerText = '+ Новый чат';
+            newChatBtn.onclick = () => createNewChat();
+            container.appendChild(newChatBtn);
+            
+            const chatsDiv = document.createElement('div');
+            chatsDiv.className = 'chats-list';
+            
+            if (chatsList.length === 0) {
+                chatsDiv.innerHTML = '<div class="empty-chats">Нет чатов. Создайте первый!</div>';
+            } else {
+                for (const chat of chatsList) {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'chat-item';
+                    chatItem.innerHTML = `
+                        <div class="chat-avatar" style="background: ${chat.avatar_color || '#4a6fa5'}">${escapeHtml(chat.avatar_symbol || '💬')}</div>
+                        <div class="chat-info">
+                            <div class="chat-name">${escapeHtml(chat.name || (chat.type === 'private' ? 'Личный чат' : 'Без названия'))}</div>
+                            <div class="chat-last-msg">${chat.type === 'channel' ? '📢 Канал' : chat.type === 'group' ? '👥 Группа' : '🔒 Приват'}</div>
+                        </div>
+                    `;
+                    chatItem.onclick = () => openChat(chat);
+                    chatsDiv.appendChild(chatItem);
+                }
+            }
+            container.appendChild(chatsDiv);
+            messengerSection.innerHTML = '';
+            messengerSection.appendChild(container);
+        }
+        
+        async function createNewChat() {
+            const type = prompt('Тип чата: private, group, channel');
+            if (!type || !['private', 'group', 'channel'].includes(type)) return;
+            
+            let name = null;
+            if (type !== 'private') name = prompt('Название чата:');
+            if (type !== 'private' && !name) return;
+            
+            const { data: chat, error } = await supabase.from('chats').insert({
+                type: type,
+                name: name,
+                created_by: currentUser.id,
+                avatar_symbol: type === 'channel' ? '📢' : type === 'group' ? '👥' : '💬'
+            }).select().single();
+            
+            if (error) { alert('Ошибка: ' + error.message); return; }
+            
+            await supabase.from('chat_members').insert({ chat_id: chat.id, user_id: currentUser.id, role: 'admin' });
+            
+            if (type === 'private') {
+                const otherUserEmail = prompt('Email пользователя для приватного чата:');
+                if (otherUserEmail) {
+                    const { data: users } = await supabase.from('profiles').select('id').eq('email', otherUserEmail);
+                    if (users && users[0]) {
+                        await supabase.from('chat_members').insert({ chat_id: chat.id, user_id: users[0].id, role: 'member' });
+                    } else {
+                        alert('Пользователь не найден');
+                    }
+                }
+            }
+            
+            loadChats();
+        }
+        
+        async function openChat(chat) {
+            currentChat = chat;
+            messengerSection.innerHTML = `
+                <div class="chat-header">
+                    <button class="back-btn" id="backToChats">←</button>
+                    <div class="chat-avatar" style="background: ${chat.avatar_color || '#4a6fa5'}">${escapeHtml(chat.avatar_symbol || '💬')}</div>
+                    <div><strong>${escapeHtml(chat.name || (chat.type === 'private' ? 'Личный чат' : 'Чат'))}</strong><br><small>${chat.type === 'channel' ? 'Канал' : chat.type === 'group' ? 'Группа' : 'Приват'}</small></div>
+                </div>
+                <div class="messages-container" id="messagesContainer"></div>
+                <div class="message-input-area">
+                    <input type="text" class="message-input" placeholder="Сообщение..." id="messageInput">
+                    <button class="send-message-btn" id="sendMsgBtn">📤</button>
+                </div>
+            `;
+            
+            document.getElementById('backToChats').onclick = () => {
+                if (messagesSubscription) messagesSubscription.unsubscribe();
+                currentChat = null;
+                loadChats();
+            };
+            
+            await loadMessages(chat.id);
+            
+            if (messagesSubscription) messagesSubscription.unsubscribe();
+            messagesSubscription = supabase
+                .channel(`chat-${chat.id}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chat.id}` }, payload => {
+                    addMessageToChat(payload.new);
+                })
+                .subscribe();
+            
+            document.getElementById('sendMsgBtn').onclick = () => sendMessage(chat.id);
+            document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(chat.id); });
+        }
+        
+        async function loadMessages(chatId) {
+            const { data, error } = await supabase
+                .from('messages')
+                .select('*')
+                .eq('chat_id', chatId)
+                .order('created_at', { ascending: true });
+            
+            if (error) return;
+            
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            for (const msg of data || []) {
+                addMessageToChat(msg);
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addMessageToChat(message) {
+            const container = document.getElementById('messagesContainer');
+            if (!container) return;
+            
+            const msgDiv = document.createElement('div');
+            const isOwn = message.user_id === currentUser.id;
+            msgDiv.className = `message ${isOwn ? 'message-own' : 'message-other'}`;
+            
+            if (!isOwn) {
+                const senderSpan = document.createElement('div');
+                senderSpan.className = 'message-sender';
+                senderSpan.innerText = message.user_name || 'User';
+                msgDiv.appendChild(senderSpan);
+            }
+            
+            const textSpan = document.createElement('div');
+            textSpan.innerText = message.content;
+            msgDiv.appendChild(textSpan);
+            
+            const timeSpan = document.createElement('div');
+            timeSpan.className = 'message-time';
+            timeSpan.innerText = formatTime(new Date(message.created_at).getTime());
+            msgDiv.appendChild(timeSpan);
+            
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        async function sendMessage(chatId) {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            if (!content) return;
+            
+            await supabase.from('messages').insert({
+                chat_id: chatId,
+                user_id: currentUser.id,
+                user_name: currentProfile?.name || currentUser.email?.split('@')[0],
+                content: content,
+                created_at: new Date().toISOString()
+            });
+            
+            input.value = '';
+        }
+
+        // ========== АВТОРИЗАЦИЯ ==========
+        function renderAuth() {
+            authSection.classList.remove('hide');
+            feedSection.classList.add('hide');
+            messengerSection.classList.add('hide');
+            userHeaderInfo.innerHTML = '';
+            authSection.innerHTML = `
+                <div class="auth-container">
+                    <div class="auth-tabs"><button class="auth-tab active">Вход</button><button class="auth-tab">Регистрация</button></div>
+                    <div><input type="email" class="auth-input" placeholder="Email"><input type="password" class="auth-input" placeholder="Пароль"><button class="auth-btn">Войти</button><div class="error-msg"></div></div>
+                </div>
+            `;
+            const loginTab = authSection.querySelector('.auth-tab');
+            const regTab = authSection.querySelectorAll('.auth-tab')[1];
+            const emailInput = authSection.querySelector('.auth-input');
+            const passInput = authSection.querySelectorAll('.auth-input')[1];
+            const submitBtn = authSection.querySelector('.auth-btn');
+            const errorMsg = authSection.querySelector('.error-msg');
+            let activeTab = 'login';
+            
+            loginTab.onclick = () => { loginTab.classList.add('active'); regTab.classList.remove('active'); submitBtn.innerText = 'Войти'; activeTab = 'login'; errorMsg.innerText = ''; };
+            regTab.onclick = () => { regTab.classList.add('active'); loginTab.classList.remove('active'); submitBtn.innerText = 'Зарегистрироваться'; activeTab = 'register'; errorMsg.innerText = ''; };
+            
+            submitBtn.onclick = async () => {
+                const email = emailInput.value.trim();
+                const password = passInput.value;
+                if (!email || !password) { errorMsg.innerText = 'Заполните поля'; return; }
+                try {
+                    if (activeTab === 'register') {
+                        const { error } = await supabase.auth.signUp({ email, password });
+                        if (error) throw error;
+                        errorMsg.style.color = '#06a06b'; errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
+                        emailInput.value = ''; passInput.value = ''; loginTab.click();
+                    } else {
+                        const { error } = await supabase.auth.signInWithPassword({ email, password });
+                        if (error) throw error;
+                        await checkUserAndLoad();
+                    }
+                } catch (err) { errorMsg.innerText = err.message; }
+            };
+        }
+        
+        async function checkUserAndLoad() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                currentProfile = await loadProfile(user.id);
+                updateHeaderInfo();
+                authSection.classList.add('hide');
                 feedSection.classList.remove('hide');
                 messengerSection.classList.add('hide');
-                loadInitialFeed();
+                await loadInitialFeed();
+                document.querySelector('.tab-btn[data-tab="feed"]').classList.add('active');
+                document.querySelector('.tab-btn[data-tab="messenger"]').classList.remove('active');
             } else {
-                feedSection.classList.add('hide');
-                messengerSection.classList.remove('hide');
-                loadChats();
-            }
-        });
-    });
-
-    function formatTime(timestamp) {
-        const diff = Date.now() - timestamp;
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-        if (minutes < 1) return "только что";
-        if (minutes < 60) return `${minutes} мин назад`;
-        if (hours < 24) return `${hours} ч назад`;
-        if (days === 1) return "вчера";
-        return `${days} дн назад`;
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // ========== АВТОРИЗАЦИЯ (как была) ==========
-    async function loadProfile(userId) {
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-        if (error || !data) {
-            return { id: userId, name: currentUser?.email?.split('@')[0] || 'User', avatar_color: '#4a6fa5', avatar_symbol: '👤', bio: '' };
-        }
-        return data;
-    }
-
-    function updateHeaderInfo() {
-        if (currentUser && currentProfile) {
-            userHeaderInfo.innerHTML = `<button id="logoutBtnHeader" class="logout-btn">Выйти</button>`;
-            document.getElementById('logoutBtnHeader')?.addEventListener('click', async () => {
-                await supabase.auth.signOut();
-                currentUser = null;
                 renderAuth();
-            });
-        }
-    }
-
-    // ========== ЛЕНТА (сокращённо, но рабочая) ==========
-    async function loadInitialFeed() {
-        if (!currentUser) return;
-        feedSection.innerHTML = '<div class="loading">📱 Загрузка...</div>';
-        const { data: posts, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
-        if (error) { feedSection.innerHTML = `<div class="empty-feed">Ошибка: ${error.message}</div>`; return; }
-        allPosts = posts || [];
-        const { data: userLikes } = await supabase.from('likes').select('post_id').eq('user_id', currentUser.id);
-        userLikesSet = new Set(userLikes?.map(l => l.post_id) || []);
-        const { data: allComments } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
-        commentsMap.clear();
-        if (allComments) for (const comm of allComments) {
-            if (!commentsMap.has(comm.post_id)) commentsMap.set(comm.post_id, []);
-            commentsMap.get(comm.post_id).push(comm);
-        }
-        renderFeed();
-    }
-
-    function renderFeed() {
-        const newPostPanel = document.createElement('div');
-        newPostPanel.className = 'new-post-panel';
-        newPostPanel.innerHTML = `<textarea class="new-post-text" rows="2" placeholder="Что нового?"></textarea><button class="publish-btn">📤 Опубликовать</button>`;
-        const textarea = newPostPanel.querySelector('.new-post-text');
-        const pubBtn = newPostPanel.querySelector('.publish-btn');
-        pubBtn.onclick = async () => {
-            const content = textarea.value.trim();
-            if (!content) return;
-            await supabase.from('posts').insert({ user_id: currentUser.id, user_email: currentUser.email, user_name: currentProfile?.name, content, created_at: new Date().toISOString(), likes_count: 0 });
-            textarea.value = '';
-            loadInitialFeed();
-        };
-        const feedContainer = document.createElement('div');
-        feedContainer.id = 'dynamicFeed';
-        for (const post of allPosts) {
-            const card = document.createElement('div');
-            card.className = 'post-card';
-            card.innerHTML = `
-                <div class="post-header"><div class="avatar">${escapeHtml(post.user_name?.[0] || 'U')}</div><div class="user-info"><div class="user-name">${escapeHtml(post.user_name || post.user_email?.split('@')[0])}</div><div class="post-time">${formatTime(new Date(post.created_at).getTime())}</div></div></div>
-                <div class="post-text">${escapeHtml(post.content)}</div>
-                <div class="post-actions"><button class="action-btn like-btn ${userLikesSet.has(post.id) ? 'liked' : ''}"><span class="like-icon">${userLikesSet.has(post.id) ? '❤️' : '🤍'}</span><span class="like-count">${post.likes_count || 0}</span></button></div>
-            `;
-            feedContainer.appendChild(card);
-        }
-        feedSection.innerHTML = '';
-        feedSection.appendChild(newPostPanel);
-        feedSection.appendChild(feedContainer);
-    }
-
-    // ========== МЕССЕНДЖЕР ==========
-    async function loadChats() {
-        if (!currentUser) return;
-        messengerSection.innerHTML = '<div class="loading">💬 Загрузка чатов...</div>';
-        
-        // Получаем чаты, где пользователь участник
-        const { data: memberships, error } = await supabase
-            .from('chat_members')
-            .select('chat_id, chats(*)')
-            .eq('user_id', currentUser.id);
-        
-        if (error) {
-            messengerSection.innerHTML = `<div class="empty-feed">Ошибка: ${error.message}</div>`;
-            return;
-        }
-        
-        chatsList = memberships?.map(m => m.chats) || [];
-        
-        const container = document.createElement('div');
-        const newChatBtn = document.createElement('button');
-        newChatBtn.className = 'new-chat-btn';
-        newChatBtn.innerText = '+ Новый чат';
-        newChatBtn.onclick = () => createNewChat();
-        container.appendChild(newChatBtn);
-        
-        const chatsDiv = document.createElement('div');
-        chatsDiv.className = 'chats-list';
-        
-        if (chatsList.length === 0) {
-            chatsDiv.innerHTML = '<div class="empty-chats">Нет чатов. Создайте первый!</div>';
-        } else {
-            for (const chat of chatsList) {
-                const chatItem = document.createElement('div');
-                chatItem.className = 'chat-item';
-                chatItem.innerHTML = `
-                    <div class="chat-avatar" style="background: ${chat.avatar_color || '#4a6fa5'}">${escapeHtml(chat.avatar_symbol || '💬')}</div>
-                    <div class="chat-info">
-                        <div class="chat-name">${escapeHtml(chat.name || (chat.type === 'private' ? 'Личный чат' : 'Без названия'))}</div>
-                        <div class="chat-last-msg">${chat.type === 'channel' ? '📢 Канал' : chat.type === 'group' ? '👥 Группа' : '🔒 Приват'}</div>
-                    </div>
-                `;
-                chatItem.onclick = () => openChat(chat);
-                chatsDiv.appendChild(chatItem);
-            }
-        }
-        container.appendChild(chatsDiv);
-        messengerSection.innerHTML = '';
-        messengerSection.appendChild(container);
-    }
-    
-    async function createNewChat() {
-        const type = prompt('Тип чата: private, group, channel');
-        if (!type || !['private', 'group', 'channel'].includes(type)) return;
-        
-        let name = null;
-        if (type !== 'private') name = prompt('Название чата:');
-        if (type !== 'private' && !name) return;
-        
-        const { data: chat, error } = await supabase.from('chats').insert({
-            type: type,
-            name: name,
-            created_by: currentUser.id,
-            avatar_symbol: type === 'channel' ? '📢' : type === 'group' ? '👥' : '💬'
-        }).select().single();
-        
-        if (error) { alert('Ошибка: ' + error.message); return; }
-        
-        // Добавляем создателя как участника
-        await supabase.from('chat_members').insert({ chat_id: chat.id, user_id: currentUser.id, role: 'admin' });
-        
-        // Для приватного чата запрашиваем второго пользователя
-        if (type === 'private') {
-            const otherUserEmail = prompt('Email пользователя для приватного чата:');
-            if (otherUserEmail) {
-                const { data: users } = await supabase.from('profiles').select('id').eq('email', otherUserEmail);
-                if (users && users[0]) {
-                    await supabase.from('chat_members').insert({ chat_id: chat.id, user_id: users[0].id, role: 'member' });
-                }
             }
         }
         
-        loadChats();
-    }
-    
-    async function openChat(chat) {
-        currentChat = chat;
-        messengerSection.innerHTML = `
-            <div class="chat-header">
-                <button class="back-btn" id="backToChats">←</button>
-                <div class="chat-avatar" style="background: ${chat.avatar_color || '#4a6fa5'}">${escapeHtml(chat.avatar_symbol || '💬')}</div>
-                <div><strong>${escapeHtml(chat.name || (chat.type === 'private' ? 'Личный чат' : 'Чат'))}</strong><br><small>${chat.type === 'channel' ? 'Канал' : chat.type === 'group' ? 'Группа' : 'Приват'}</small></div>
-            </div>
-            <div class="messages-container" id="messagesContainer"></div>
-            <div class="message-input-area">
-                <input type="text" class="message-input" placeholder="Сообщение..." id="messageInput">
-                <button class="send-message-btn" id="sendMsgBtn">📤</button>
-            </div>
-        `;
-        
-        document.getElementById('backToChats').onclick = () => {
-            if (messagesSubscription) messagesSubscription.unsubscribe();
-            currentChat = null;
-            loadChats();
-        };
-        
-        // Загружаем сообщения
-        await loadMessages(chat.id);
-        
-        // Подписка на новые сообщения
-        if (messagesSubscription) messagesSubscription.unsubscribe();
-        messagesSubscription = supabase
-            .channel(`chat-${chat.id}`)
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chat.id}` }, payload => {
-                addMessageToChat(payload.new);
-            })
-            .subscribe();
-        
-        document.getElementById('sendMsgBtn').onclick = () => sendMessage(chat.id);
-        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(chat.id); });
-    }
-    
-    async function loadMessages(chatId) {
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .eq('chat_id', chatId)
-            .order('created_at', { ascending: true });
-        
-        if (error) return;
-        
-        const container = document.getElementById('messagesContainer');
-        container.innerHTML = '';
-        for (const msg of data || []) {
-            addMessageToChat(msg);
-        }
-        container.scrollTop = container.scrollHeight;
-    }
-    
-    function addMessageToChat(message) {
-        const container = document.getElementById('messagesContainer');
-        if (!container) return;
-        
-        const msgDiv = document.createElement('div');
-        const isOwn = message.user_id === currentUser.id;
-        msgDiv.className = `message ${isOwn ? 'message-own' : 'message-other'}`;
-        
-        if (!isOwn) {
-            const senderSpan = document.createElement('div');
-            senderSpan.className = 'message-sender';
-            senderSpan.innerText = message.user_name || 'User';
-            msgDiv.appendChild(senderSpan);
-        }
-        
-        const textSpan = document.createElement('div');
-        textSpan.innerText = message.content;
-        msgDiv.appendChild(textSpan);
-        
-        const timeSpan = document.createElement('div');
-        timeSpan.className = 'message-time';
-        timeSpan.innerText = formatTime(new Date(message.created_at).getTime());
-        msgDiv.appendChild(timeSpan);
-        
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
-    }
-    
-    async function sendMessage(chatId) {
-        const input = document.getElementById('messageInput');
-        const content = input.value.trim();
-        if (!content) return;
-        
-        await supabase.from('messages').insert({
-            chat_id: chatId,
-            user_id: currentUser.id,
-            user_name: currentProfile?.name || currentUser.email?.split('@')[0],
-            content: content,
-            created_at: new Date().toISOString()
+        supabase.auth.onAuthStateChange(async (event) => {
+            if (event === 'SIGNED_IN') await checkUserAndLoad();
+            else if (event === 'SIGNED_OUT') { currentUser = null; renderAuth(); }
         });
         
-        input.value = '';
-    }
-
-    // ========== АВТОРИЗАЦИЯ ==========
-    function renderAuth() {
-        authSection.classList.remove('hide');
-        feedSection.classList.add('hide');
-        messengerSection.classList.add('hide');
-        userHeaderInfo.innerHTML = '';
-        authSection.innerHTML = `
-            <div class="auth-container">
-                <div class="auth-tabs"><button class="auth-tab active">Вход</button><button class="auth-tab">Регистрация</button></div>
-                <div><input type="email" class="auth-input" placeholder="Email"><input type="password" class="auth-input" placeholder="Пароль"><button class="auth-btn">Войти</button><div class="error-msg"></div></div>
-            </div>
-        `;
-        const loginTab = authSection.querySelector('.auth-tab');
-        const regTab = authSection.querySelectorAll('.auth-tab')[1];
-        const emailInput = authSection.querySelector('.auth-input');
-        const passInput = authSection.querySelectorAll('.auth-input')[1];
-        const submitBtn = authSection.querySelector('.auth-btn');
-        const errorMsg = authSection.querySelector('.error-msg');
-        let activeTab = 'login';
-        
-        loginTab.onclick = () => { loginTab.classList.add('active'); regTab.classList.remove('active'); submitBtn.innerText = 'Войти'; activeTab = 'login'; errorMsg.innerText = ''; };
-        regTab.onclick = () => { regTab.classList.add('active'); loginTab.classList.remove('active'); submitBtn.innerText = 'Зарегистрироваться'; activeTab = 'register'; errorMsg.innerText = ''; };
-        
-        submitBtn.onclick = async () => {
-            const email = emailInput.value.trim();
-            const password = passInput.value;
-            if (!email || !password) { errorMsg.innerText = 'Заполните поля'; return; }
-            try {
-                if (activeTab === 'register') {
-                    const { error } = await supabase.auth.signUp({ email, password });
-                    if (error) throw error;
-                    errorMsg.style.color = '#06a06b'; errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
-                    emailInput.value = ''; passInput.value = ''; loginTab.click();
-                } else {
-                    const { error } = await supabase.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
-                    await checkUserAndLoad();
-                }
-            } catch (err) { errorMsg.innerText = err.message; }
-        };
-    }
-    
-    async function checkUserAndLoad() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            currentUser = user;
-            currentProfile = await loadProfile(user.id);
-            updateHeaderInfo();
-            authSection.classList.add('hide');
-            feedSection.classList.remove('hide');
-            messengerSection.classList.add('hide');
-            await loadInitialFeed();
-            // Устанавливаем активный таб "Лента"
-            document.querySelector('.tab-btn[data-tab="feed"]').classList.add('active');
-            document.querySelector('.tab-btn[data-tab="messenger"]').classList.remove('active');
-        } else {
-            renderAuth();
-        }
-    }
-    
-    supabase.auth.onAuthStateChange(async (event) => {
-        if (event === 'SIGNED_IN') await checkUserAndLoad();
-        else if (event === 'SIGNED_OUT') { currentUser = null; renderAuth(); }
-    });
-    
-    checkUserAndLoad();
+        checkUserAndLoad();
+    })();
 </script>
 <footer class="container">RuEncryp · Лента + Мессенджер (личные чаты, группы, каналы)</footer>
 </body>
