@@ -58,7 +58,6 @@
             padding: 6px 14px;
             border-radius: 30px;
             font-size: 0.75rem;
-            color: #4a5b6e;
             cursor: pointer;
             margin-left: 8px;
         }
@@ -67,6 +66,9 @@
             color: white;
             border: none;
         }
+        .logout-btn {
+            color: #4a5b6e;
+        }
 
         .post-card {
             background: white;
@@ -74,7 +76,6 @@
             padding: 16px;
             margin-bottom: 18px;
             border: 1px solid #e7ecf3;
-            transition: all 0.2s ease;
         }
         .post-header {
             display: flex;
@@ -139,11 +140,9 @@
             cursor: pointer;
             padding: 6px 10px;
             border-radius: 40px;
-            transition: 0.1s;
         }
         .action-btn:active {
             background: #eef2f7;
-            transform: scale(0.96);
         }
         .like-btn.liked {
             color: #c2412c;
@@ -290,11 +289,16 @@
             font-size: 1rem;
             cursor: pointer;
         }
-        .error-msg {
-            color: #c2412c;
+        .error-msg, .success-msg {
             font-size: 0.8rem;
             margin-top: 12px;
             text-align: center;
+        }
+        .error-msg {
+            color: #c2412c;
+        }
+        .success-msg {
+            color: #06a06b;
         }
         .loading {
             text-align: center;
@@ -335,7 +339,6 @@
             font-weight: 600;
             color: white;
             cursor: pointer;
-            transition: 0.1s;
         }
         .color-options {
             display: flex;
@@ -421,7 +424,6 @@
     const feedSection = document.getElementById('feedSection');
     const userHeaderInfo = document.getElementById('userHeaderInfo');
 
-    // Цвета для аватара
     const avatarColors = ['#4a6fa5', '#e94560', '#48cae4', '#06d6a0', '#ffb703', '#8338ec', '#fb5607', '#3a86ff'];
     
     function formatTime(timestamp) {
@@ -443,7 +445,7 @@
         return div.innerHTML;
     }
 
-    // Загрузка профиля пользователя
+    // Загрузка профиля
     async function loadProfile(userId) {
         const { data, error } = await supabaseClient
             .from('profiles')
@@ -451,40 +453,22 @@
             .eq('id', userId)
             .single();
         
-        if (error && error.code !== 'PGRST116') {
-            console.error('Error loading profile:', error);
-            return null;
+        if (error) {
+            console.error('Ошибка загрузки профиля:', error);
+            return {
+                id: userId,
+                name: currentUser.email?.split('@')[0] || 'Пользователь',
+                avatar_color: '#4a6fa5',
+                avatar_symbol: '👤',
+                bio: ''
+            };
         }
         
-        if (data) {
-            return data;
-        }
-        
-        // Создаём профиль, если его нет
-        const newProfile = {
-            id: userId,
-            name: currentUser.email?.split('@')[0] || 'Пользователь',
-            avatar_color: '#4a6fa5',
-            avatar_symbol: '👤',
-            bio: ''
-        };
-        
-        const { data: created, error: insertError } = await supabaseClient
-            .from('profiles')
-            .insert(newProfile)
-            .select()
-            .single();
-        
-        if (insertError) {
-            console.error('Error creating profile:', insertError);
-            return newProfile;
-        }
-        
-        return created;
+        return data;
     }
 
-    // Обновление профиля
-    async function updateProfile(updates) {
+    // Сохранение профиля
+    async function saveProfile(updates) {
         const { error } = await supabaseClient
             .from('profiles')
             .update(updates)
@@ -498,14 +482,30 @@
         return true;
     }
 
-    // Обновление имени автора во всех постах
+    function updateHeaderInfo() {
+        if (currentUser && currentProfile) {
+            userHeaderInfo.innerHTML = `
+                <button id="profileBtn" class="profile-btn">👤</button>
+                <button id="logoutBtnHeader" class="logout-btn">Выйти</button>
+            `;
+            const profileBtn = document.getElementById('profileBtn');
+            const logoutBtn = document.getElementById('logoutBtnHeader');
+            if (profileBtn) profileBtn.addEventListener('click', showProfileEditor);
+            if (logoutBtn) logoutBtn.addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                renderAuth();
+            });
+        }
+    }
+
     function updateAllPostsAuthorInfo() {
         document.querySelectorAll('.post-card').forEach(card => {
-            const userNameSpan = card.querySelector('.user-name');
-            const avatarDiv = card.querySelector('.avatar');
-            const userBioSpan = card.querySelector('.user-bio');
-            
             if (card.dataset.authorId === currentUser.id) {
+                const userNameSpan = card.querySelector('.user-name');
+                const avatarDiv = card.querySelector('.avatar');
+                const userBioSpan = card.querySelector('.user-bio');
+                
                 if (userNameSpan) userNameSpan.innerText = currentProfile.name;
                 if (avatarDiv) {
                     avatarDiv.innerText = currentProfile.avatar_symbol || currentProfile.name.charAt(0).toUpperCase();
@@ -518,22 +518,6 @@
         });
     }
 
-    function updateHeaderInfo() {
-        if (currentUser && currentProfile) {
-            userHeaderInfo.innerHTML = `
-                <button id="profileBtn" class="profile-btn">👤</button>
-                <button id="logoutBtnHeader" class="logout-btn">Выйти</button>
-            `;
-            document.getElementById('profileBtn')?.addEventListener('click', showProfileEditor);
-            document.getElementById('logoutBtnHeader')?.addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
-                currentUser = null;
-                renderAuth();
-            });
-        }
-    }
-
-    // Показать редактор профиля
     function showProfileEditor() {
         feedSection.classList.add('hide');
         profileSection.classList.remove('hide');
@@ -547,7 +531,7 @@
                 <h3 style="margin-bottom: 20px;">Редактировать профиль</h3>
                 <div class="avatar-preview">
                     <div id="avatarPreview" class="avatar-large" style="background: ${currentProfile.avatar_color || '#4a6fa5'}">
-                        ${currentProfile.avatar_symbol || currentProfile.name?.charAt(0).toUpperCase() || '👤'}
+                        ${escapeHtml(currentProfile.avatar_symbol || currentProfile.name?.charAt(0).toUpperCase() || '👤')}
                     </div>
                 </div>
                 <div class="color-options" id="colorOptions">
@@ -563,7 +547,7 @@
                 <textarea id="profileBio" class="profile-textarea" 
                           placeholder="О себе" rows="3">${escapeHtml(currentProfile.bio || '')}</textarea>
                 <button id="saveProfileBtn" class="profile-save-btn">💾 Сохранить изменения</button>
-                <div id="profileError" class="error-msg"></div>
+                <div id="profileMessage" class="error-msg"></div>
             </div>
         `;
         
@@ -587,7 +571,10 @@
         });
         
         // Сохранение
-        document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const saveBtn = document.getElementById('saveProfileBtn');
+        const messageDiv = document.getElementById('profileMessage');
+        
+        saveBtn.onclick = async () => {
             const selectedColor = document.querySelector('.color-option.selected')?.dataset.color || avatarColors[0];
             let symbol = document.getElementById('avatarSymbol').value.trim();
             if (!symbol) symbol = '👤';
@@ -595,36 +582,40 @@
             const bio = document.getElementById('profileBio').value.trim();
             
             if (!name) {
-                document.getElementById('profileError').innerText = 'Имя не может быть пустым';
+                messageDiv.className = 'error-msg';
+                messageDiv.innerText = '❌ Имя не может быть пустым';
                 return;
             }
             
+            messageDiv.className = 'error-msg';
+            messageDiv.innerText = '⏳ Сохранение...';
+            saveBtn.disabled = true;
+            
             try {
-                await updateProfile({
+                await saveProfile({
                     name: name,
                     avatar_color: selectedColor,
                     avatar_symbol: symbol,
                     bio: bio
                 });
-                document.getElementById('profileError').innerText = '✅ Профиль обновлён!';
+                messageDiv.className = 'success-msg';
+                messageDiv.innerText = '✅ Профиль обновлён!';
                 setTimeout(() => {
-                    document.getElementById('profileError').innerText = '';
+                    messageDiv.innerText = '';
                 }, 2000);
-                
-                // Обновляем ленту, если она открыта
-                if (!feedSection.classList.contains('hide')) {
-                    await refreshAllPostsData();
-                }
             } catch (err) {
-                document.getElementById('profileError').innerText = 'Ошибка: ' + err.message;
+                messageDiv.className = 'error-msg';
+                messageDiv.innerText = '❌ Ошибка: ' + err.message;
+            } finally {
+                saveBtn.disabled = false;
             }
-        });
+        };
         
-        document.getElementById('backToFeed').addEventListener('click', async () => {
+        document.getElementById('backToFeed').onclick = () => {
             profileSection.classList.add('hide');
             feedSection.classList.remove('hide');
-            await refreshAllPostsData();
-        });
+            refreshAllPostsData();
+        };
     }
 
     async function refreshAllPostsData() {
@@ -675,8 +666,6 @@
         if (!feedContainer) return;
         const postElement = createPostElement(post);
         feedContainer.insertBefore(postElement, feedContainer.firstChild);
-        postElement.classList.add('post-highlight');
-        setTimeout(() => postElement.classList.remove('post-highlight'), 1000);
     }
 
     function createPostElement(post) {
@@ -686,10 +675,18 @@
         card.dataset.authorId = post.user_id;
         
         const commentsList = commentsMap.get(post.id) || [];
-        const authorName = post.user_id === currentUser?.id && currentProfile ? currentProfile.name : (post.user_name || post.user_email?.split('@')[0] || 'Аноним');
-        const authorAvatarSymbol = (post.user_id === currentUser?.id && currentProfile?.avatar_symbol) ? currentProfile.avatar_symbol : (post.user_name?.[0] || 'U').toUpperCase();
-        const authorAvatarColor = (post.user_id === currentUser?.id && currentProfile?.avatar_color) ? currentProfile.avatar_color : '#4a6fa5';
-        const authorBio = (post.user_id === currentUser?.id && currentProfile?.bio) ? currentProfile.bio : '';
+        let authorName = post.user_name;
+        let authorAvatarSymbol = post.user_name?.[0] || 'U';
+        let authorAvatarColor = '#4a6fa5';
+        let authorBio = '';
+        
+        // Если это текущий пользователь и профиль загружен — берём из профиля
+        if (post.user_id === currentUser?.id && currentProfile) {
+            authorName = currentProfile.name;
+            authorAvatarSymbol = currentProfile.avatar_symbol || currentProfile.name?.charAt(0) || 'U';
+            authorAvatarColor = currentProfile.avatar_color || '#4a6fa5';
+            authorBio = currentProfile.bio || '';
+        }
         
         card.innerHTML = `
             <div class="post-header">
@@ -919,6 +916,7 @@
                 if (activeTab === 'register') {
                     const { error } = await supabaseClient.auth.signUp({ email, password });
                     if (error) throw error;
+                    errorMsg.style.color = '#06a06b';
                     errorMsg.innerText = '✅ Регистрация успешна! Теперь войдите.';
                     emailInput.value = '';
                     passInput.value = '';
@@ -929,6 +927,7 @@
                     await checkUserAndLoad();
                 }
             } catch (err) {
+                errorMsg.style.color = '#c2412c';
                 errorMsg.innerText = err.message || 'Ошибка авторизации';
             }
         };
